@@ -1,0 +1,6 @@
+plot 'out/bond_hw-ow.espl' u 1:2 w l
+replot 'out/angle_hw-ow-hw.espl' u (acos($1)):2 w l   
+replot 'out/pair_hw-ow.espl' u 1:2 w l
+replot 'out/pair_hw-hw.espl' u 1:2 w l
+replot 'out/pair_ow-ow.espl' u 1:2 w l
+

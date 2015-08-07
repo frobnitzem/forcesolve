@@ -1,0 +1,11 @@
+This directory contains files needed for a quick hoe-to tutorial on using this set of programs for computing and using coarse-grained Hamiltonians.
+
+
+Right now there is just the water system, designed to show that we can get the initial forcefield back to good accuracy.
+
+Each system will have a xxx.sh file containing a list of *example* commands you should use as well as commentary on what is happening and any stuff you need to do manually in-between.
+
+The water box does not actually employ any coarse-graining, it just serves to show that we can get the initial forcefield back to good accuracy.
+
+
+Obviously the MD program is not up to par due to its quick N^2 pairwise interaction computation, but it serves its purpose as a good test for small systems.  In addition, several currently available MD programs allow input of spline-based potentials.  In particular, Gromacs allows table input of nonbonded terms which can be specified in a per-group manner.  NAMD also has support for this in a developer version (contact Peter Freddolino on namd-l@ks.uiuc.edu).  Hopefully this trend will continue to bonded fores as well...

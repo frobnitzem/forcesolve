@@ -1,0 +1,42 @@
+;
+;	File 'mdout.mdp' was generated
+;	By user: spoel (291)
+;	On host: chagall
+;	At date: Mon Dec 15 13:13:06 2003
+;
+
+; VARIOUS PREPROCESSING OPTIONS
+title                    = Yo
+cpp                      = /usr/bin/cpp
+include                  = 
+define                   = 
+
+; RUN CONTROL PARAMETERS
+integrator               = md
+dt                       = 0.001 ; 1 fs
+nsteps                   = 5000 ; 5 ps
+tinit			 = 0
+
+comm-mode                = Linear
+nstcomm                  = 1
+
+nstxout                  = 1
+nstvout                  = 1
+nstfout                  = 0
+
+nstlog                   = 10
+nstenergy                = 1
+
+nstlist                  = 1
+ns_type                  = simple
+pbc                      = xyz
+domain-decomposition     = no
+
+coulombtype              = Shift
+;rcoulomb_switch          = 0.8
+rcoulomb                 = 0.926
+vdw-type                 = Shift
+;rvdw_switch              = 0.8
+rvdw                     = 0.926 ; slightly smaller than 17.5 Bohr radii
+rlist                    = 0.926
+

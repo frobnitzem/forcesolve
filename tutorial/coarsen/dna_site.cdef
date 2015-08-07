@@ -1,0 +1,68 @@
+# Coarse site definition file
+# Weights are optional (assumed = 1 if not present)
+
+# Coarse sites computed via linear combinations of fine atom positions:
+# x_c = (scale/Sum{wt_i}) Sum{wt_i * x_i}
+
+# File format:
+# SITE <4-char coarse atom name> <coarse residue name>
+#		<number of fine atoms> from <fine residue name> wt <scale=1.0>
+# SITE fine atom list:
+# <residue offset> <atom name> <wt_i>
+
+# COPY <coarse residue name> <number of atoms> from <fine residue name>
+# COPY fine atom list:
+# <4-char. coarse atom name> <4-char. fine atom name>
+
+# Phosphate center on DNA residues
+SITE  PB  G 5 from G wt 1.0
+SITE  PB  C 5 from C wt 1.0
+SITE  PB  A 5 from A wt 1.0
+SITE  PB  T 5 from T wt 1.0
+ P    0 30.973761
+ O1P  0 15.9994
+ O2P  0 15.9994
+ O5*  0 15.9994
+ O3* -1 15.9994
+
+# Backbone sugar center on DNA residues
+SITE  C4B G 3 from G
+SITE  C4B C 3 from C
+SITE  C4B A 3 from A
+SITE  C4B T 3 from T
+ C5*  0 12.011
+ C4*  0 12.011
+ C3*  0 12.011
+
+# Base pair connector on DNA residues
+SITE  C1  G 1 from G
+SITE  C1  C 1 from C
+SITE  C1  A 1 from A
+SITE  C1  T 1 from T
+ C1*  0
+
+# DNA Nucleotide Atoms
+COPY G 6 from G wt 1.0
+ N1  N1 
+ N2  N2 
+ N3  N3 
+ O6  O6 
+ N7  N7 
+ N9  N9 
+COPY C 4 from C
+ N1  N1 
+ O2  O2 
+ N3  N3 
+ N4  N4 
+COPY T 4 from T
+ N1  N1 
+ O2  O2 
+ N3  N3 
+ O4  O4 
+COPY A 5 from A
+ N1  N1 
+ N3  N3 
+ N6  N6 
+ N7  N7 
+ N9  N9 
+

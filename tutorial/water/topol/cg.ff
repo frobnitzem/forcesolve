@@ -1,0 +1,79 @@
+# Coarse-grained forcefield specification file
+# This file includes a list of all interactions which are
+# to be included in the CG forcefield.
+
+# First, you need to specify the molecule graph (nodes, edges).
+# This can be done by any combination of the methode below:
+
+# Listing out the edges:
+# EDGE a b ...
+#   Will create an edge (bond) between site number a and all other atom numbers
+#   listed on the same line.
+# Alternatively, residue topologies can be created which rely on properly
+# numbered and labeled residues.
+# REDGE name atom1 atom2 ...
+#   Will create edges between atom1 and everything else listed on
+#   the same line (within that residue).  Using keywords +n or -n before
+#   a "to" atom name in this context will cause a bond to the nth previous/next
+#   residue's atoms.  Of course, if the names don't exist in the residues
+#   they are looked for, an error will occur.
+# An example pdb (with EXPDB) is required in any case, in order to
+# define the pdb structure for i/o.
+
+include types.index
+REDGE SOL OW HW1 HW2
+#REDGE SOL OW -1 OW # Just for fun...
+file EXPDB wat.pdb
+file CONST_DIR .
+
+PERIODIC 35.188590339747627 35.188590339747627 35.188590339747627
+
+# Next, you need to list out the interactions to be used.
+# Although the molecule's topology is specified, not all standard MM
+# terms need be used to calculate the energy.
+# ONLY those interactions turned on here will be used for calculations!!
+
+# Standard interaction types are: XPAIR BOND ANGLE TORSION
+# These can be used to add terms one-by one using the syntax:
+# BOND rname aname [+n/-n] aname
+#   -- where rname is the residue name, and aname is the atom name.
+# Or, the keyword "all" can be used once to specify all:all -- your choice.
+# Note that all cannot be used as the source unless all is also the destination.
+
+# Each pair listed in XPAIR (same syntax as BOND, lines) is excluded from the
+# nonbonded intraction list.
+# When using XPAIR with "all", the bonded exclusion distance is specified in
+# the usual way (i.e. all4 gives all 1-4 interactions -- skipping 2 atoms and
+# providing distance-dependent terms for torsion and above.
+# The keyword all0 turns off nonbonded interactions.
+
+# Note also that ANGLE terms are parameterized as functions
+# of the angle cosine: thus using (non-periodic) spline tables from -1 to 1.
+# This is because the prior probability function sin(th) for angles
+# cancells with the Jacobian of the transformation z = cos(th)
+# and makes everyone happy.
+# For this reason, distance parameters can be finagled to have a uniform
+# prior if they are tabulated as functions of z=r^3.
+# This is not necessary, though, since priors of the form r^m are allowed.
+# TORSION terms are parameterized as periodic functions on [0, 2*pi).
+
+PAIR all4
+BOND all
+ANGLE all
+TOR all
+
+# User-defined interaction types could also be supported, but would require
+# specification of the function and its derivative with respect to the
+# atom positions.
+
+# The above list of interactions is particularly important because of the naming
+# convention for energy-spline files.
+# Energy-splines are named as "<type>.rname[./+/-]aname.espl"
+
+# The task of loading a topology thus consists of:
+# 1. Loading an input structure.
+# 2. Reading this file and collecting a list of edges and unique interaction
+#    types, then generating lists of angles, torsions, and pair-wise exclusions
+#    from the molecule graph.
+# 4. Reading all the appropriate .espl files into memory.
+

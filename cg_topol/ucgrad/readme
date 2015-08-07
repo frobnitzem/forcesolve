@@ -1,0 +1,33 @@
+ucgrad Copyright 2008 David M. Rogers.
+
+    ucgrad is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    ucgrad is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with ucgrad (i.e. frc_solve/COPYING).
+    If not, contact the author(s) immediately \at/ wantye \/ gmail.com or
+    http://forceSolve.sourceforge.net/. And see http://www.gnu.org/licenses/
+    for a copy of the GNU GPL.
+
+== IF YOU USE THIS SOFTWARE ==
+Please cite the following reference:
+Cite ucgrad like a book published by University of Cincinnati:
+David M. Rogers and Thomas L. Beck. Ucgrad (University of Cincinnati, Cincinnati OH, USA, 2008).
+
+If your publisher has issues with this, you can fall back on a web-style reference:
+David M. Rogers and Thomas L. Beck. Ucgrad (2008) on the World Wide Web http://forcesolve.sourceforge.net
+
+List of authors:
+David M. Rogers, University of Cincinnati -- wantye \at/ gmail.com
+Thomas L. Beck, University of Cincinnati -- thomas.beck \at/ uc.edu
+
+Acknowledgements:
+
+This work was sponsored by a DOE Computational Science Graduate Fellowship (CSGF), DE-FG02-97ER25308; a DoD/Army grant W911NF-04-1-0381,Army-W911NF-04-1-0381 for Multiscale Modeling of Complex Systems: Conformational Transitions in Proteins; and an NSF grant CHE-0709560.

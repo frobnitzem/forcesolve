@@ -1,0 +1,30 @@
+To add a new interaction type, just follow the example of bond.py and (of course) add the source file to the __init__.py file.
+
+Each interaction type extends the main cg_topol class by adding (at minimum)
+an append_<name> method -- which is called for each line containing that header.
+The arguments are the line (minus its <name> header), parsed into tokens
+with split().
+
+In addition, for every interaction type listed in cg_forcefield_terms, the
+methods defined by init_<name> and finalize_<name> are called respectively
+before or after all calls to append_<name> during the __init__ method for the
+cg_topol class.  The read_<name> method is required to read the constants
+for the given energy term and should use self.const_dir as the base directory.
+
+A small caveat is that there may be multiple coefficient sets for the same type of interaction (e.g. bonds between CA-CB vs. bonds between CA-NH).  This is worked around by requiring finalize_<name> to create a list of interaction subtypes.  Each subtype has one <name>_info interface class (e.g. bond_info[0]), and a list of atom sets involved -- i.e. bond[0] is a list of atom lists interacting using the parameters stored in bond_info[0].
+
+The standard interface for interaction types should create an ordered list of lists containing all N_t interactions of this type and a method to compute the nonlinear pieces of the energy function and (at least the first) derivative.  This computation should be implemented in a function design_<name>(self, x, derivative order=0) and give an (N_atoms)**order x M_t "design" matrix, where M_t is the number of basis functions used.
+E_t(x) = Sum over i to M_t { a_i y_i,t(x) }
+
+In order to perform force matching, it is also necessary to define at least one
+linear constraint on the constants a_i -- defining a null space.
+(in order to remove the unknown additive constant from each force term).  The
+constrain_<name> method should thus return an ? x M_t element array, where ?
+is the number of constraints.  In the case of B-splines, the integral
+over the entire function is just the sum of individual constants.  Therefore,
+a good choice is usually ones((1,M_t)) -- except for VDW terms, where only the
+last constant should be nonzero.  There should also be a quadratic prior penalty matrix returned by prior_<name>.
+
+Acknowledgements:
+
+This work was sponsored by a DOE Computational Science Graduate Fellowship (CSGF), DE-FG02-97ER25308; a DoD/Army grant W911NF-04-1-0381,Army-W911NF-04-1-0381 for Multiscale Modeling of Complex Systems: Conformational Transitions in Proteins; and an NSF grant CHE-0709560.
