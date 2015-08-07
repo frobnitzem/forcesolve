@@ -26,9 +26,12 @@
 from cg_topol import *
 from type_index import *
 from bspline import *
+from poly import *
 
-# Standard types below.  Try adding yout own!
+# Standard types below.  Try adding your own!
 from bonds import *
 from angles import *
 from torsions import *
 from pairs import *
+
+from mmbonds import *
