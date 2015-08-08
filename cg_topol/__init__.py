@@ -34,4 +34,5 @@ from angles import *
 from torsions import *
 from pairs import *
 
-from mmbonds import *
+from pbonds import *
+from pangles import *

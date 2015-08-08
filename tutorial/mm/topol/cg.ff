@@ -58,7 +58,7 @@ PERIODIC 35.188590339747627 35.188590339747627 35.188590339747627
 # TORSION terms are parameterized as periodic functions on [0, 2*pi).
 
 PBOND all
-#PANGLE all
+PANGLE all
 
 # User-defined interaction types could also be supported, but would require
 # specification of the function and its derivative with respect to the

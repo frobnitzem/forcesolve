@@ -185,4 +185,6 @@ def pbond_type_calc(name, r):
 	x1 = 5.0
 	id = "pbond_"+name
 	f = poly_func(r, False, (x0,x1), id)
-	return type_calc(id, f, None, 2)
+	e0 = zeros(r+1)
+	e0[0] = 1.0 # set additive const. to 0
+	return type_calc(id, f, [e0], 2)

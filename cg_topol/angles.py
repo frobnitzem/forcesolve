@@ -100,7 +100,7 @@ class cg_topol:
 	def calc_angle(self, x):
 		ang = []
 		for alist,info in zip(self.angle, self.angle_info):
-			ang.append( angle(array([[x[...,i,:]-x[...,j,:],\
+			ang.append( anglec(array([[x[...,i,:]-x[...,j,:],\
 				x[...,k,:]-x[...,j,:]] for i,j,k in alist])) )
 		return ang
 	
@@ -110,7 +110,7 @@ class cg_topol:
 		A = []
 		if order == 0:
 		  for alist,info in zip(self.angle, self.angle_info):
-		    a = angle(array([[x[...,i,:]-x[...,j,:],\
+		    a = anglec(array([[x[...,i,:]-x[...,j,:],\
 			x[...,k,:]-x[...,j,:]] for i,j,k in alist]))
 		    spl = info.spline(a, order)
 		    A.append(sum(spl,-2))# Sum over all atoms in ea. structure.
@@ -119,7 +119,7 @@ class cg_topol:
 		  Ad = []
 		  for alist,info in zip(self.angle, self.angle_info):
 		    ad = zeros(x.shape+(info.f.n,), float)
-		    a,da = dangle(array([[x[...,i,:]-x[...,j,:],\
+		    a,da = danglec(array([[x[...,i,:]-x[...,j,:],\
 			x[...,k,:]-x[...,j,:]] for i,j,k in alist]))
 		    spl, dspl = info.spline(a, order)
 		    for z in range(len(alist)):
@@ -153,7 +153,7 @@ class cg_topol:
 		en = 0.0
 		F = zeros(x.shape, float)
 		for alist,info in zip(self.angle, self.angle_info):
-			a, da = dangle(array([[x[...,i,:]-x[...,j,:],\
+			a, da = danglec(array([[x[...,i,:]-x[...,j,:],\
 				x[...,k,:]-x[...,j,:]] for i,j,k in alist]))
 			u, du = info.f.ay(a, 1)
 			en += sum(u,-1)
@@ -172,7 +172,7 @@ def angle_type_calc(name, bspl):
 	m = 0
 	return type_calc(id, f, f.integral(0, m), m)
 	
-def angle(x):
+def anglec(x):
 	if len(x.shape) > 3:
 		trns = range(len(x.shape))
 		trns = trns[2:-1]+trns[:2]+trns[-1:]
@@ -180,7 +180,7 @@ def angle(x):
 	return sum(x[...,0,:]*x[...,1,:],-1) \
 	  / sqrt(sum(x[...,0,:]*x[...,0,:],-1)*sum(x[...,1,:]*x[...,1,:],-1))
 	
-def dangle(x):
+def danglec(x):
 	if len(x.shape) > 3:
 		trns = range(len(x.shape))
 		trns = trns[2:-1]+trns[:2]+trns[-1:]
