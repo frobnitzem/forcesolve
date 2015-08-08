@@ -25,7 +25,7 @@
 # This work was supported by a DOE CSGF.
 
 from cg_topol import *
-from bspline import *
+from poly import *
 
 # Represents bonded energy as polynomial f(r)
 
@@ -59,7 +59,7 @@ class cg_topol:
 		bond = [] # List of atoms involved.
 		bond_info = [] # List of bond_type_calc classes.
 		bond_index = {}
-		for i,j in self.bond:
+		for i,j in self.pbond:
 			ti = self.names[i][2]
 			tj = self.names[j][2]
 			if ti <= tj:
@@ -114,7 +114,7 @@ class cg_topol:
 		if order == 0:
 		  for blist,info in zip(self.pbond, self.pbond_info):
 		    b = bond(array([x[...,j,:]-x[...,i,:] for i,j in blist]))
-		    spl = info.poly(b, order)
+		    spl = info.f.spline(b, order)
 		    A.append(sum(spl,-2)) # Sum over all such interactions.
 		  return A
 		elif order == 1:
@@ -123,7 +123,7 @@ class cg_topol:
 		    ad = zeros(x.shape+(info.f.n,), float)
 		    b, db = dbond(array([x[...,j,:]-x[...,i,:] \
 						for i,j in blist]))
-		    spl, dspl = info.poly(b, order)
+		    spl, dspl = info.f.spline(b, order)
 		    for k in range(len(blist)):
 			i,j = blist[k]
 			ad[...,i,:,:] -= db[...,k,:,newaxis] \

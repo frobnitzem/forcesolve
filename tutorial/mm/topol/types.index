@@ -1,0 +1,7 @@
+# List of type names TRA for type <- res atom res atom res atom ...
+# RAT for res atom -> type
+TRA hw SOL HW1 SOL HW2
+RAT SOL OW ow
+
+TMASS hw 1
+TMASS ow 16

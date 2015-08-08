@@ -1,0 +1,9 @@
+TITLE     Pure Water
+REMARK    THIS IS A SIMULATION BOX
+CRYST1   18.621   18.621   18.621  90.00  90.00  90.00 P 1           1
+MODEL        1
+ATOM      1  OW  SOL     1      17.120   3.310   4.290  1.00  0.00
+ATOM      2  HW1 SOL     1      17.920   3.340   4.960  1.00  0.00
+ATOM      3  HW2 SOL     1      17.560   2.760   3.490  1.00  0.00
+TER
+ENDMDL
