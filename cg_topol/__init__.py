@@ -24,15 +24,5 @@
 # This work was supported by a DOE CSGF.
 
 from cg_topol import *
-from type_index import *
-from bspline import *
-from poly import *
-
-# Standard types below.  Try adding your own!
-from bonds import *
-from angles import *
-from torsions import *
-from pairs import *
-
-from pbonds import *
-from pangles import *
+#from bspline import *
+#from poly import *

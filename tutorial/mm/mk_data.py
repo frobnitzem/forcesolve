@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Generate a list of configurations and forces for the
 # lowly water molecule
 

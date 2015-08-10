@@ -30,10 +30,10 @@ from concat_term import FFconcat
 from numpy import *
 
 # Adds the "pair" forcefield term into the list of atomic interactions.
-class SplinePair(SplineTerm):
+class LJPair(PolyTerm):
     def __init__(self, name, edges, L=None):
         # internal vars
-        SplineTerm.__init__(self, "pair_" + name, Bspline(6), 170, 0.0, 17.0, 2)
+        PolyTerm.__init__(self, "ljpair_" + name, 2)
         self.edges = edges
         if L != None:
             self.periodic = True
@@ -43,82 +43,50 @@ class SplinePair(SplineTerm):
 
 # Returns the energy of configuration x and/or the conserved force on each atom.
     def energy(self, c, x):
-        self.f.c = c
         delta = array([x[...,j,:]-x[...,i,:] for i,j in self.edges])
         if self.periodic: # Wrap for periodicity.
             delta -= self.box_L * floor(delta/self.box_L+0.5)
-        A = bond(delta)
-        return sum(info.f.y(A), -1)
+        b = bond(delta)**-6
+        return sum(info.f.y(c, b), -1)
 	
     def force(self, c, x):
-        self.f.c = c
-
         delta = array([x[...,j,:]-x[...,i,:] for i,j in self.edges])
         if self.periodic: # Wrap for periodicity.
             delta -= self.box_L * floor(delta/self.box_L+0.5)
-        b, db = dbond(delta)
-        u, du = self.f.y(b, 1)
+        r, db = dbond(delta) # r, dr/dx
+        u, du = self.f.y(c, r**-6, 1) # f(r^-6), df/du (u = r^-6)
+        # du/dr = -6 r^-7
+        du *= -6*r**-7
 
         en = sum(u, -1)
         F = zeros(x.shape)
         for k,(i,j) in enumerate(plist):
-            F[...,i,:] += du[k]*db[...,k,:]
+            F[...,i,:] += du[k]*db[...,k,:] # df/du du/dr dr/dx
             F[...,j,:] -= du[k]*db[...,k,:]
         return en,F
 
     # The design array multiplies the spline coefficients to produce the
     # total bonded energy/force.
     def design_pair(self, x, order=0):
-        A = []
         delta = array([x[...,j,:]-x[...,i,:] for i,j in self.edges])
         if self.periodic: # Wrap for periodicity.
             delta -= self.box_L * floor(delta/self.box_L+0.5)
 
         if order == 0:
-            return sum(self.spline(bond(delta), order),-2)
+            return sum(self.spline(bond(delta)**-6, order), -2)
         elif order == 1:
             Ad = zeros(x.shape + (info.f.n,))
-            b,db = dbond(delta)
-            spl, dspl = info.spline(b, order)
-            for k,(i,j) in enumerate(plist):
+            r, db = dbond(delta) # r, dr/dx
+            spl, dspl = info.spline(r**-6, order) # D(r^-6), dD(r^-6)/du
+            dspl *= -6*r**-7 # du/dr
+            for k,(i,j) in enumerate(plist): # dD/dx
                 Ad[...,i,:,:] -= db[...,k,:,newaxis] \
                                 * dspl[...,k,newaxis,:]
                 Ad[...,j,:,:] += db[...,k,:,newaxis] \
                                 * dspl[...,k,newaxis,:]
-            A = sum(spl,-2)
+            A = sum(spl, -2)
             return A, Ad
         else:
             raise RuntimeError, "Error! >1 energy derivative not "\
                                   "supported."
-
-# skip 3 => count 1,4 pairs
-def pair_terms(pdb, mkterm, skip=3):
-	xpair = []
-	for a in range(pdb.atoms):
-		xpair.append(set([a]))
-	for i in range(1,skip): # Extend table by 1 bond.
-	    for a in range(pdb.atoms):
-		xpair[a] |= reduce(lambda x,y: x|y, \
-				[pdb.conn[b] for b in xpair[a]])
-	xpair = reduce(lambda x,y: x|y, \
-			[modprod([a],x) for a,x in enumerate(xpair)])
-	pair = []
-	for i in range(pdb.atoms-1):
-	    pair += [(i,j) for j in range(i+1,pdb.atoms)]
-	pdb.pair = set(pair)-xpair
-
-	pair_index = {}
-	for i,j in self.pair:
-		ti = self.names[i][2]
-		tj = self.names[j][2]
-		if ti > tj:
-                    ti, tj = (tj, ti)
-                    i, j = (j, i)
-		name = "%s-%s"%(ti,tj)
-                if not pair_index.has_key(name):
-                    pair_index[name] = []
-                pair_index[name].append((i,j))
-        terms = [mkterm(name, l, pdb.L) \
-                        for name, l in pair_index.iteritems()]
-        return FFconcat(terms)
 

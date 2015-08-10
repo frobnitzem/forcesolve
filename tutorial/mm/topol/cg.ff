@@ -26,8 +26,6 @@ REDGE SOL OW HW1 HW2
 file EXPDB wat.pdb
 file CONST_DIR .
 
-PERIODIC 35.188590339747627 35.188590339747627 35.188590339747627
-
 # Next, you need to list out the interactions to be used.
 # Although the molecule's topology is specified, not all standard MM
 # terms need be used to calculate the energy.
@@ -57,8 +55,8 @@ PERIODIC 35.188590339747627 35.188590339747627 35.188590339747627
 # This is not necessary, though, since priors of the form r^m are allowed.
 # TORSION terms are parameterized as periodic functions on [0, 2*pi).
 
-PBOND all
-PANGLE all
+BOND all
+ANGLE all
 
 # User-defined interaction types could also be supported, but would require
 # specification of the function and its derivative with respect to the

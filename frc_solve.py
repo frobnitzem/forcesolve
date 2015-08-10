@@ -4,7 +4,7 @@
 # Please convert your data to atomic units
 # -- Hartree, Bohr, e- mass, atomic time units --
 # before using to avoid any unpleasantness.
-# Although you could use -sd and -kT I haven't tested this yet...
+# Although you could use -sx and -kT I haven't tested this yet...
 
 # This file is part of ForceSolve, Copyright (C) 2008 David M. Rogers.
 #
@@ -34,7 +34,7 @@ import sys
 from cg_topol.ucgrad.array_io import *
 from cg_topol.ucgrad.parser import *
 from frc_match import *
-from cg_topol import *
+from cg_topol import cg_topol, show_index
 
 UsageInfo =  "Usage: frc_solve.py [options] [files]\n" \
 "Files:\n" \
@@ -73,7 +73,7 @@ def main(argv):
 		samples = 5000
 	
 	# read parameter file
-	topol = cg_topol(flags['p'][0])
+	topol, pdb = cg_topol(flags['p'][0])
 	
 	dt = 1.0
 	if flags.has_key('dt'):
@@ -89,12 +89,12 @@ def main(argv):
 	else:
 		print "Assuming kT = %f"%kT
 	
-	forces = frc_match(topol, dt, kT)
+	forces = frc_match(topol, pdb, dt, kT)
 	
 	# Classify and combine input into types
 	print "Interaction type index:"
-	forces.show_index()
-	if(forces.topol.parameters-len(forces.constraints) == 0):
+	show_index(forces.topol)
+	if(forces.topol.params-len(forces.constraints) == 0):
 		print
 		print Usage
 		print "Yow! No fit-able parameters present."
@@ -105,7 +105,7 @@ def main(argv):
 	for xf, ff in zip(flags['x'],flags['f']):
 		print "Appending %s %s"%(xf,ff)
 		x = read_matrix(xf)
-		x = reshape(x, (len(x)/topol.atoms, topol.atoms, 3))
+		x = reshape(x, (len(x)/pdb.atoms, pdb.atoms, 3))
 		f = read_array(ff, x.shape)
 		if flags.has_key('sx'):
 			scale = float(flags['sx'][0])
@@ -118,12 +118,21 @@ def main(argv):
 		forces.append(x, f) # Force matching.
 	
 	forces.dimensionality()
-	if flags.has_key('mle'):
+
+        # Do the right thing.
+        if not flags.has_key('mle') \
+            and (forces.topol.hyp_params == 0 or samples == 0):
+                flags['mle'] = flags['o']
+
+        if flags.has_key('mle'):
 		print "Finding maximum posterior estimate..."
 		forces.maximize()
 		print "Writing mle to prefix \"%s\"..."%(\
 					flags['mle'][0])
 		forces.write_out(flags['mle'][0])
+
+        if forces.topol.hyp_params == 0 or samples == 0:
+            return 0
 	
 	print "Sampling spline coefficients..."
 	forces.sample(samples, 500, 5)
@@ -133,4 +142,5 @@ def main(argv):
 	return 0
 
 if __name__ == "__main__":
-	main(sys.argv)
+        main(sys.argv)
+
