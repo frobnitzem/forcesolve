@@ -63,7 +63,7 @@ class PolyAngle(PolyTerm):
             return A
         elif order == 1:
             Ad = []
-            Ad = zeros(x.shape+(self.f.n,), float)
+            Ad = zeros(x.shape+(self.params,))
             a,da = dangle(array([ [x[...,i,:]-x[...,j,:],\
                                    x[...,k,:]-x[...,j,:]] \
                                  for i,j,k in self.angs]))
@@ -101,5 +101,5 @@ def dangle(x):
     A[...,0,:] = x[...,1,:]-A[...,0,:]
     A[...,1,:] = x[...,0,:]-A[...,1,:]
     A *= rijk_inv[..., newaxis] # d(cth) / di and dk
-    return arccos(cth), -A/sqrt(1.0-cth*cth)
+    return arccos(cth), -A/sqrt(1.0-cth*cth)[...,newaxis,newaxis]
 

@@ -60,14 +60,14 @@ class LJPair(PolyTerm):
 
         en = sum(u, -1)
         F = zeros(x.shape)
-        for k,(i,j) in enumerate(plist):
+        for k,(i,j) in enumerate(self.edges):
             F[...,i,:] += du[k]*db[...,k,:] # df/du du/dr dr/dx
             F[...,j,:] -= du[k]*db[...,k,:]
         return en,F
 
     # The design array multiplies the spline coefficients to produce the
     # total bonded energy/force.
-    def design_pair(self, x, order=0):
+    def design(self, x, order=0):
         delta = array([x[...,j,:]-x[...,i,:] for i,j in self.edges])
         if self.periodic: # Wrap for periodicity.
             delta -= self.box_L * floor(delta/self.box_L+0.5)
@@ -75,11 +75,11 @@ class LJPair(PolyTerm):
         if order == 0:
             return sum(self.spline(bond(delta)**-6, order), -2)
         elif order == 1:
-            Ad = zeros(x.shape + (info.f.n,))
+            Ad = zeros(x.shape + (self.params,))
             r, db = dbond(delta) # r, dr/dx
-            spl, dspl = info.spline(r**-6, order) # D(r^-6), dD(r^-6)/du
-            dspl *= -6*r**-7 # du/dr
-            for k,(i,j) in enumerate(plist): # dD/dx
+            spl, dspl = self.spline(r**-6, order) # D(r^-6), dD(r^-6)/du
+            dspl *= -6*r[...,newaxis]**-7 # du/dr
+            for k,(i,j) in enumerate(self.edges): # dD/dx
                 Ad[...,i,:,:] -= db[...,k,:,newaxis] \
                                 * dspl[...,k,newaxis,:]
                 Ad[...,j,:,:] += db[...,k,:,newaxis] \

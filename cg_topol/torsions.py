@@ -164,6 +164,7 @@ def torsion_terms(pdb, mkterm):
             tor_index[name] = []
         tor_index[name].append((i,j,k,l))
 
+    print "%d Torsions"%sum(map(len, tor_index.values()))
     terms = [mkterm(n,l) for n,l in tor_index.iteritems()]
     return FFconcat(terms)
 

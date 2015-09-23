@@ -57,29 +57,29 @@ class PolyTorsion(PolyTerm):
     
     # The design array multiplies the spline coefficients to produce the
     # total bonded energy/force.
-    def design_tor(self, x, order=0):
+    def design(self, x, order=0):
         A = []
         if order == 0:
-            tor = torsion(array([[x[...,i,:]-x[...,j,:],\
-                                  x[...,j,:]-x[...,k,:],\
-                                  x[...,l,:]-x[...,k,:]] \
-                                    for i,j,k,l in self.tors]))
+            tor = torsionc(array([[x[...,i,:]-x[...,j,:],\
+                                   x[...,j,:]-x[...,k,:],\
+                                   x[...,l,:]-x[...,k,:]] \
+                                     for i,j,k,l in self.tors]))
             return sum(self.spline(tor, order),-2)
         elif order == 1:
-            Ad = zeros(x.shape+(self.f.n,))
-            t, dt = dtorsion(array([[x[...,i,:]-x[...,j,:],\
-                                     x[...,j,:]-x[...,k,:],\
-                                     x[...,l,:]-x[...,k,:]] \
-                                        for i,j,k,l in alist]))
+            Ad = zeros(x.shape+(self.params,))
+            t, dt = dtorsionc(array([[x[...,i,:]-x[...,j,:],\
+                                      x[...,j,:]-x[...,k,:],\
+                                      x[...,l,:]-x[...,k,:]] \
+                                         for i,j,k,l in self.tors]))
             spl, dspl = self.spline(t, order)
             for z,(i,j,k,l) in enumerate(self.tors):
                 Ad[...,i,:,:] += dt[...,z,0,:,newaxis] \
                                         * dspl[...,z,newaxis,:]
-                Ad[...,l,:,:] += dt[...,z,1,:,newaxis] \
+                Ad[...,l,:,:] += dt[...,z,2,:,newaxis] \
                                         * dspl[...,z,newaxis,:]
-                Ad[...,j,:,:] -= dt[...,z,2,:,newaxis] \
+                Ad[...,j,:,:] -= (dt[...,z,1,:,newaxis]+dt[...,z,0,:,newaxis]) \
                                         * dspl[...,z,newaxis,:]
-                Ad[...,k,:,:] += dt[...,z,3,:,newaxis] \
+                Ad[...,k,:,:] += (dt[...,z,1,:,newaxis]-dt[...,z,2,:,newaxis]) \
                                         * dspl[...,z,newaxis,:]
             A = sum(spl, -2)
             return A, Ad

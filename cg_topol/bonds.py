@@ -87,6 +87,7 @@ def bond_terms(pdb, mkterm):
             bond_index[name] = []
         bond_index[name].append((i,j))
 
+    print "%d Bonds"%sum(map(len, bond_index.values()))
     terms = [mkterm(n,l) for n,l in bond_index.iteritems()]
     return FFconcat(terms)
 

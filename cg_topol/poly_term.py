@@ -29,16 +29,14 @@ class PolyTerm:
             Mp[..., :, i+1:] *= (arange(self.params)-i)[:,newaxis]
         return transpose(Mp, [len(Mp.shape)-1,] + range(len(Mp.shape)-1))
 
-    def write(self, name, c, mode='w'):
+    def write(self, pre, c, mode='w'):
+        #name = self.name.replace(' ', '-').replace('\t', '_'\
+        #                    ).replace('\n', '')
+        name = pre + self.name + ".poly"
         out = open(name, mode)
-        if len(self.id) < 1:
-            id = "file"
-        else:
-            id = self.id.replace(' ', '-').replace('\t', '_'\
-                            ).replace('\n', '')
-            hdr = "#POLY %s order %d\n"%(id,self.params-1) # File header.
-            out.write(hdr)
-            for i,c in enumerate(c):
-                out.write("%d %12e\n"%(i, c))
-            out.close()
+        hdr = "#POLY %s order %d\n"%(self.name,self.params-1) # File header.
+        out.write(hdr)
+        for i,c in enumerate(c):
+            out.write("%d %12e\n"%(i, c))
+        out.close()
 
