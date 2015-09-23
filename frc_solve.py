@@ -119,7 +119,7 @@ def main(argv):
 	
 	forces.dimensionality()
 
-        # Do the right thing.
+        # Just do the right thing (TM).
         if not flags.has_key('mle') \
             and (forces.topol.hyp_params == 0 or samples == 0):
                 flags['mle'] = flags['o']

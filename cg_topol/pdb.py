@@ -8,6 +8,7 @@ from edge import *
 #     names : [(name : String, res : String, atype : String)],
 #     mass : Array Float n,
 #     atoms : Int, -- number of atoms
+#     L : None | Array Float (3,3), -- box dimensions
 #   }
 class PDB:
     def __init__(self, names, m, x, edge):
@@ -17,6 +18,7 @@ class PDB:
         self.x = x
         self.edge = edge
         self.conn = build_conn(self.atoms, edge)
+        self.L = None
 
 # Inputs:
 #   params -- parsed parameter file

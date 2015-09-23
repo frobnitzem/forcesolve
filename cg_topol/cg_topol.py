@@ -7,6 +7,11 @@ from angles import angle_terms, SplineAngle
 from pairs import pair_terms, SplinePair
 from concat_term import FFconcat
 
+from pbonds import PolyBond
+from ptorsions import PolyTorsion
+from pangles import PolyAngle
+from ljpairs import LJPair
+
 RequiredParams = ["EXPDB", "CONST_DIR"]
 def cg_topol(pfile):
     params = parseparam(pfile, RequiredParams)

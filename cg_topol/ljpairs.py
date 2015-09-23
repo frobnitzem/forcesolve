@@ -24,7 +24,7 @@
 # University of Cincinnati
 # This work was supported by a DOE CSGF.
 
-from spline_term import SplineTerm
+from poly_term import PolyTerm
 from bonds import bond, dbond
 from concat_term import FFconcat
 from numpy import *

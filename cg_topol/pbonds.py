@@ -1,4 +1,4 @@
-from spline_term import SplineTerm
+from poly_term import PolyTerm
 from bspline import Bspline
 from concat_term import FFconcat
 from numpy import *

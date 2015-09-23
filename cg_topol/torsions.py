@@ -145,16 +145,16 @@ def cross_product(x,y):
 def torsion_terms(pdb, mkterm):
     tors = set()
     for j,k in pdb.edge:
-        tors += [(i,j,k,l) for i,l in modprod(self.conn[j]-set([k]), \
-                                              self.conn[k]-set([j])) \
-                                   if i != l]
+        tors |= set([(i,j,k,l) for i,l in modprod(pdb.conn[j]-set([k]), \
+                                                  pdb.conn[k]-set([j])) \
+                                       if i != l])
 
     tor_index = {}
     for i,j,k,l in tors:
-        ti = self.names[i][2]
-        tj = self.names[j][2]
-        tk = self.names[k][2]
-        tl = self.names[l][2]
+        ti = pdb.names[i][2]
+        tj = pdb.names[j][2]
+        tk = pdb.names[k][2]
+        tl = pdb.names[l][2]
         # "Strike that; reverse it." -- Willy Wonka.
         if tj > tk or (tj == tk and ti > tl):
             ti, tj, tk, tl = (tl, tk, tj, ti)

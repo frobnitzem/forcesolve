@@ -22,7 +22,7 @@
 # University of Cincinnati
 # This work was supported by a DOE CSGF.
 
-from spline_term import SplineTerm
+from poly_term import PolyTerm
 from bspline import Bspline
 from edge import modprod
 from concat_term import FFconcat

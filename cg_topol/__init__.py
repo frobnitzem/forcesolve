@@ -24,5 +24,6 @@
 # This work was supported by a DOE CSGF.
 
 from cg_topol import *
+from pdb import PDB, build_pdb
 #from bspline import *
 #from poly import *

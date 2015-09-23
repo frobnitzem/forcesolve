@@ -25,6 +25,7 @@
 # This work was supported by a DOE CSGF.
 
 from spline_term import SplineTerm
+from edge import modprod
 from bonds import bond, dbond
 from concat_term import FFconcat
 from numpy import *
@@ -108,9 +109,9 @@ def pair_terms(pdb, mkterm, skip=3):
 	pdb.pair = set(pair)-xpair
 
 	pair_index = {}
-	for i,j in self.pair:
-		ti = self.names[i][2]
-		tj = self.names[j][2]
+	for i,j in pdb.pair:
+		ti = pdb.names[i][2]
+		tj = pdb.names[j][2]
 		if ti > tj:
                     ti, tj = (tj, ti)
                     i, j = (j, i)
