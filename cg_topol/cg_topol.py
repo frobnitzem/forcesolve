@@ -12,6 +12,8 @@ from ptorsions import PolyTorsion
 from pangles import PolyAngle
 from ljpairs import LJPair
 
+import os
+
 RequiredParams = ["EXPDB", "CONST_DIR"]
 def cg_topol(pfile):
     params = parseparam(pfile, RequiredParams)
@@ -47,13 +49,22 @@ def show_index(topol):
     print "%d total constraints." % len(topol.constraints)
     print
 
-def write_topol(t, pre, c):
+def write_topol_r(t, pre, c):
     if hasattr(t, "terms"):
         i = 0
         for ti in t.terms:
             ip = i + ti.params
-            write_topol(ti, pre, c[i:ip])
+            write_topol_r(ti, pre, c[i:ip])
             i = ip
     else:
         t.write(pre, c)
+
+def write_topol(t, pre, c):
+    ensure_dir(pre)
+    write_topol_r(t, os.path.join(pre, ""), c)
+
+def ensure_dir(f):
+    d = os.path.dirname(f)
+    if not os.path.exists(d):
+        os.makedirs(d)
 

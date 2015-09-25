@@ -106,6 +106,7 @@ class frc_match:
 			self.type_index.append(tn)
 		self.mass = self.pdb.mass
 		self.nt = array(nt)
+                print self.nt, mass, self.type_index
 
 	# Estimate the actual dimensionality of iC.
 	def dimensionality(self, sigma_tol=1.0e-5):
@@ -135,15 +136,17 @@ class frc_match:
 		chunk = 100
 		
 		if self.samples > 0:
-			raise runtimeError, "Error! Cannot add more data "\
+			raise ValueError, "Error! Cannot add more data "\
 				"points to mature frc_match object."
 		if x.shape != f.shape:
 			print x.shape, f.shape
-			raise runtimeError, "Error! x and f trajectory shapes "\
+			raise ValueError, "Error! x and f trajectory shapes "\
 				"differ!"
-		if x.shape[1] != self.pdb.atoms:
-			raise InputError, "Error! Number of atoms in "\
+		if x.shape[-2] != self.pdb.atoms:
+			raise ValueError, "Error! Number of atoms in "\
 				"trajectory does not match topology!"
+                if x.shape[-1] != 3:
+			raise ValueError, "Error! last dim should be crd xyz!"
 		
 		# Multiply by ugly constants here.
 		Xfac = self.dt*sqrt(self.kT/self.mass) # Non-dimensionalize.
