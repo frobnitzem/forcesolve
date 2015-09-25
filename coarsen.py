@@ -122,7 +122,7 @@ def calcres(pdb, rn, spec, name, serial=1):
 	return res, M
 
 def calc_cg_pos(pdb, rn, aspec):
-	x = zeros(3, float)
+	x = zeros(3)
 	m = zeros(len(pdb.x))
 	sc = 0.0
 	for aname,ro,c in zip(*aspec):

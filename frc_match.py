@@ -49,10 +49,10 @@ class frc_match:
 		self.dt = dt
 		self.kT = kT
 		
-		self.D = zeros((types,params), float)
-		self.D2 = zeros((types,params,params), float)
-		self.DF = zeros((types,params), float)
-		self.F2 = zeros((types), float)
+		self.D = zeros((types,params))
+		self.D2 = zeros((types,params,params))
+		self.DF = zeros((types,params))
+		self.F2 = zeros((types))
 		self.S = 0
 		
 		self.E0 = E0
@@ -73,7 +73,7 @@ class frc_match:
 		
 		#self.theta = self.theta_from_topol() # Parameters.
                 self.theta = zeros(self.topol.params)
-		self.z = ones(types, float)
+		self.z = ones(types)
 		
 		# Sampling accumulators.
 		self.sum_v = []
@@ -132,7 +132,7 @@ class frc_match:
 # Takes as input data from a single specified atom type which may contain
 # differing remote interaction types
 	def append(self, x,f):
-		chunk = 2
+		chunk = 100
 		
 		if self.samples > 0:
 			raise runtimeError, "Error! Cannot add more data "\
@@ -182,7 +182,7 @@ class frc_match:
 	# Given an (atoms by ?) array, reduce to a (types by ?) array
 	# by summation.
 	def type_sum(self, x):
-		xt = zeros((self.types,)+x.shape[1:], float)
+		xt = zeros((self.types,)+x.shape[1:])
 		for i,t in enumerate(self.type_index):
 			xt[t] += x[i]
 		return xt
@@ -275,7 +275,7 @@ class frc_match:
 	    for i in xrange(n):
 		#print "    Updating."
 		iC = self.calc_iC()
-		b = zeros((self.topol.params,2), float)
+		b = zeros((self.topol.params,2))
 		b[:,0] = rand.standard_normal(self.topol.params) # Sample
 		b[:,1] = dot(self.z, self.DF) # Mean
 		try:

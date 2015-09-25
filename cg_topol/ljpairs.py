@@ -59,11 +59,11 @@ class LJPair(PolyTerm):
         du *= -6*r**-7
 
         en = sum(u, -1)
-        F = zeros(x.shape)
+        de = zeros(x.shape)
         for k,(i,j) in enumerate(self.edges):
-            F[...,i,:] += du[k]*db[...,k,:] # df/du du/dr dr/dx
-            F[...,j,:] -= du[k]*db[...,k,:]
-        return en,F
+            de[...,i,:] += du[k]*db[...,k,:] # df/du du/dr dr/dx
+            de[...,j,:] -= du[k]*db[...,k,:]
+        return en, de
 
     # The design array multiplies the spline coefficients to produce the
     # total bonded energy/force.

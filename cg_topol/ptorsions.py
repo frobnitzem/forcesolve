@@ -47,7 +47,7 @@ class PolyTorsion(PolyTerm):
                                   for i,j,k,l in self.tors]))
         u, du = self.f.y(c, t, 1)
         en = sum(u, -1)
-        F = zeros(x.shape, float)
+        F = zeros(x.shape)
         for z,(i,j,k,l) in enumerate(alist):
             F[...,i,:] -= du[z]*dt[...,z,0,:]
             F[...,j,:] += du[z]*(dt[...,z,1,:] + dt[...,z,0,:])
@@ -61,25 +61,25 @@ class PolyTorsion(PolyTerm):
         A = []
         if order == 0:
             tor = torsionc(array([[x[...,i,:]-x[...,j,:],\
-                                   x[...,j,:]-x[...,k,:],\
+                                   x[...,k,:]-x[...,j,:],\
                                    x[...,l,:]-x[...,k,:]] \
                                      for i,j,k,l in self.tors]))
             return sum(self.spline(tor, order),-2)
         elif order == 1:
             Ad = zeros(x.shape+(self.params,))
             t, dt = dtorsionc(array([[x[...,i,:]-x[...,j,:],\
-                                      x[...,j,:]-x[...,k,:],\
+                                      x[...,k,:]-x[...,j,:],\
                                       x[...,l,:]-x[...,k,:]] \
                                          for i,j,k,l in self.tors]))
             spl, dspl = self.spline(t, order)
             for z,(i,j,k,l) in enumerate(self.tors):
                 Ad[...,i,:,:] += dt[...,z,0,:,newaxis] \
                                         * dspl[...,z,newaxis,:]
-                Ad[...,l,:,:] += dt[...,z,2,:,newaxis] \
-                                        * dspl[...,z,newaxis,:]
                 Ad[...,j,:,:] -= (dt[...,z,1,:,newaxis]+dt[...,z,0,:,newaxis]) \
                                         * dspl[...,z,newaxis,:]
                 Ad[...,k,:,:] += (dt[...,z,1,:,newaxis]-dt[...,z,2,:,newaxis]) \
+                                        * dspl[...,z,newaxis,:]
+                Ad[...,l,:,:] += dt[...,z,2,:,newaxis] \
                                         * dspl[...,z,newaxis,:]
             A = sum(spl, -2)
             return A, Ad
@@ -115,10 +115,10 @@ def dtorsionc(x):
 
     cphi = sum(A0*A1, 0)
     # a x (b x c) = - a . (b ^ c) = b a.c - c a.b
-    d[0] = cross_product(x[1], A1/x0 + cphi*A0)
-    d[2] = cross_product(x[1], A0/x1 + cphi*A1)
-    d[1] = -cross_product(x[0]/x0 + x[2]*cphi, A1) \
-           -cross_product(x[2]/x1 + x[0]*cphi, A0)
+    d[0] = cross_product(x[1], A1 - cphi*A0)/x0
+    d[2] = cross_product(x[1], A0 - cphi*A1)/x1
+    d[1] = -cross_product(x[0], A1 - cphi*A0)/x0 \
+           -cross_product(x[2], A0 - cphi*A1)/x1
 
     trsp = range(2, len(x.shape)) + [0,1] # Move (atom,xyz) to last 2 dim.s
     return cphi, transpose(d, trsp)

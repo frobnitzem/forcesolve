@@ -65,7 +65,7 @@ class SplineAngle(SplineTerm):
             return A
         elif order == 1:
             Ad = []
-            Ad = zeros(x.shape+(self.f.n,), float)
+            Ad = zeros(x.shape+(self.f.n,))
             a,da = danglec(array([[x[...,i,:]-x[...,j,:],\
                 x[...,k,:]-x[...,j,:]] for i,j,k in self.angs]))
             spl, dspl = self.spline(a, order)

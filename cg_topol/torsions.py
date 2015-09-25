@@ -51,7 +51,7 @@ class SplineTorsion(SplineTerm):
                                  for i,j,k,l in self.tors]))
         u, du = self.f.y(t, 1)
         en = sum(u, -1)
-        F = zeros(x.shape, float)
+        F = zeros(x.shape)
         for z,(i,j,k,l) in enumerate(alist):
             F[...,i,:] -= du[z]*dt[...,z,0,:]
             F[...,l,:] -= du[z]*dt[...,z,1,:]
@@ -61,6 +61,7 @@ class SplineTorsion(SplineTerm):
     
     # The design array multiplies the spline coefficients to produce the
     # total bonded energy/force.
+    # TODO: re-check j - k for central bond???
     def design_tor(self, x, order=0):
         A = []
         if order == 0:
@@ -108,7 +109,7 @@ def dtorsion(x):
 	trsp = trsp[1:2] + trsp[-1:] + trsp[2:-1] + trsp[:1]
 	x = transpose(x, trsp) # (tor atom, xyz, ..., tor serial)
 	
-	A = zeros((4,3) + x.shape[2:], float)
+	A = zeros((4,3) + x.shape[2:])
 	
 	A[1:4] = x
 	x1 = sqrt(sum(x[1]*x[1],0))

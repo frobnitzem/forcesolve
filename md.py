@@ -147,16 +147,16 @@ class md_integrate:
 		#print self.z, self.mass, self.lam, self.vdamp, self.xdamp
 	
 	def read_iz(self, base):
-		#self.zt = zeros(len(self.type_names), float)+1.e-12*self.dt
+		#self.zt = zeros(len(self.type_names))+1.e-12*self.dt
 		#return
 		try:
 		    z = open(os.path.join(base,"v.out"))
 		except IOError:
-		    self.zt = zeros(len(self.type_names), float)+1.e-12*self.dt
+		    self.zt = zeros(len(self.type_names))+1.e-12*self.dt
 		    print "Warning! Setting damping const. to 1.0e-12 !"
 		    return
 		
-		self.zt = zeros(len(self.type_names), float)
+		self.zt = zeros(len(self.type_names))
 		marked = zeros(self.zt.shape, int)
 		for line in z.xreadlines():
 			tok = line.split()

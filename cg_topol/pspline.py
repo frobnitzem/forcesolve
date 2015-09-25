@@ -40,9 +40,9 @@ class pspline_match:
 		params = self.f.n
 		self.logalpha = logalpha
 		
-		self.D = zeros(params, float)
-		self.D2 = zeros((params,params), float)
-		self.DF = zeros(params, float)
+		self.D = zeros(params)
+		self.D2 = zeros((params,params))
+		self.DF = zeros(params)
 		self.F2 = 0.0
 		self.S = 0
 		
@@ -184,7 +184,7 @@ class pspline_match:
 	    for i in xrange(n):
 		#print "    Updating."
 		iC = self.calc_iC()
-		b = zeros((self.f.n,2), float)
+		b = zeros((self.f.n,2))
 		b[:,0] = rand.standard_normal(self.f.n) # Sample
 		b[:,1] = self.z*self.DF # Mean
 		try:

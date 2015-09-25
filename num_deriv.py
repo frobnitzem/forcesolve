@@ -28,19 +28,21 @@
 from numpy import *
 
 def num_deriv(f, x):
-	ih = 2.0**10
+	ih = 2.0**12
 	h = 0.5/ih
 	
-	oshape = x.shape
+        ishape = x.shape
+	oshape = f(x).shape
 	x = reshape(x, x.size)
-	dx = zeros(x.size, float)
+	dx = zeros((x.size,) + oshape)
 	x0 = x.copy()
 	x1 = x.copy()
 	for i in range(x.size):
 		x0[i] = x[i]-h
 		x1[i] = x[i]+h
-		dx[i] = (f(reshape(x1,oshape))-f(reshape(x0,oshape)))*ih
+		dx[i] = (f(reshape(x1,ishape))-f(reshape(x0,ishape)))*ih
 		x0[i] = x[i]
 		x1[i] = x[i]
-	x = reshape(x, oshape)
-	return reshape(dx, oshape)
+	x = reshape(x, ishape)
+	return reshape(dx, ishape + oshape)
+

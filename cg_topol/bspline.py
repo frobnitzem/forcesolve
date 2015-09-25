@@ -176,7 +176,7 @@ def factorial(n):
 
 # Derivative array for nth order derivative. d(n)P/dx**n = [x^i]^T*D(n)*C
 def Darr(n, order):
-	D = zeros((order, order), float)
+	D = zeros((order, order))
 	i = 0
 	D[i,n] = factorial(n)
 	for j in range(n+1,order):
@@ -187,7 +187,7 @@ def Darr(n, order):
 # Binomial formula coefficients for powers of x in (s*x+t)**I
 # B_IJ = s**J t**(I-J) (I choose J)
 def Barr(t, order, s=1.0):
-	B = identity(order, float)
+	B = identity(order)
 	for i in range(1, order):
 		B[i,i] = B[i-1,i-1]*s
 		B[i,0] = B[i-1,0]*t
@@ -204,8 +204,8 @@ def sum_elem(i, j, k):
 # Returns a matrix corresponding to the integral from a to b of
 # x**(i+j+k)
 def poly_integral3(shape, a, b):
-	I = zeros(shape[0:3], float) # powers of b
-	A = zeros(shape[0:3], float) # powers of a
+	I = zeros(shape[0:3]) # powers of b
+	A = zeros(shape[0:3]) # powers of a
 	I[0,0,0] = b
 	A[0,0,0] = a
 	for i in range(1, shape[0]):
@@ -232,9 +232,9 @@ def poly_integral(order, a, b, m=0, t=0, s=1.0):
 			poly_integral3((m+1, order, order), a, b), (1,0,2)))
 
 def calc_carr(n):
-	C = zeros((n/2+1, n), float)
+	C = zeros((n/2+1, n))
 	
-	c = zeros(n-1, float)
+	c = zeros(n-1)
 	C[0,n-1] = 1.0
 	for i in range(1, len(C)):
 		C[i,n-1] = C[i-1,n-1]*(i-n-1)/i
@@ -262,7 +262,7 @@ class Bspline:
 # spline coefficients at knots int(u)-(order-1), ..., int(u)
 # and right-multiplied by [x^i] gives the value of the spline at point x.
 	def calc_polycoef(self):
-		M = zeros((self.order, self.order), float)
+		M = zeros((self.order, self.order))
 		for i in range(self.order/2):
 			M[i] = dot(self.C[i], Barr(i+1, self.order, -1.0))
 			M[self.order-1-i] = dot(self.C[i], Barr(i, self.order))
@@ -278,7 +278,7 @@ class Bspline:
 # If nd is defined, it calculates the Pxnd+1 array (for derivatives 0,...,nd)
 	def calc_splcoef(self, x, nd=None):
 		if nd == None:
-		    a = zeros((len(x), self.order), float)
+		    a = zeros((len(x), self.order))
 		    for i in range(self.order/2):
 			a[:,i] = eval_poly(i+x, self.C[i])
 			a[:,self.order-1-i] = eval_poly(i+1-x, self.C[i])
@@ -286,7 +286,7 @@ class Bspline:
 			i = self.order/2
 			a[:,i] = eval_poly(i+x, self.C[i])
 		else:
-		    a = zeros((len(x), self.order, nd+1), float)
+		    a = zeros((len(x), self.order, nd+1))
 		    for i in range(self.order/2):
 			a[:,i] = eval_poly(i+x, self.C[i], nd)
 			a[:,self.order-1-i] = eval_poly(i+1-x, self.C[i], nd)
@@ -327,7 +327,7 @@ class spline_func:
 		self.h = bin[1] # Height.
 		self.ih = 1.0/bin[1]
 		self.n = bin[2] # Number of points.
-		self.c = zeros(self.n, float) # Spline constants.
+		self.c = zeros(self.n) # Spline constants.
 		if self.n < spl.order:
 			raise "InputError","Error! Number of spline points is "\
 				"less than spline order!"
@@ -372,7 +372,7 @@ class spline_func:
 		# First partial-interval?
 		if (floor(urng[0]+0.5)-urng[0])**2 > 1.0e-20:
 			u0 = int(urng[0])+1 # Since we know urng0 is non-int
-			c = zeros((1,r), float)
+			c = zeros((1,r))
 			add_matrix(c, cm, 0, u0-r)
 			pcoef.append(dot(c,self.spl.M))
 			self.pcoef_shift = -(u0-1)
@@ -383,7 +383,7 @@ class spline_func:
 		# Last partial-interval?
 		if (floor(urng[1]+0.5)-urng[1])**2 > 1.0e-20:
 			u1 = int(urng[1])
-			c = zeros((1,r), float)
+			c = zeros((1,r))
 			add_matrix(c, cm, 0, u1+1-r)
 			lpcoef.append(dot(c,self.spl.M))
 		else:
@@ -391,7 +391,7 @@ class spline_func:
 		
 		# Everything in-between.
 		for i in range(u0,u1):
-			c = zeros((1,r), float)
+			c = zeros((1,r))
 			add_matrix(c, cm, 0, i+1-r)
 			pcoef.append(dot(c,self.spl.M))
 		
@@ -436,10 +436,10 @@ class spline_func:
 		# Calculate all nonzero spline coeff.s up to derivative nd.
 		if nd != None:
 			M = self.spl.calc_splcoef(u-s, nd)
-			Mp = zeros((len(x), self.n, nd+1), float)
+			Mp = zeros((len(x), self.n, nd+1))
 		else:
 			M = self.spl.calc_splcoef(u-s)
-			Mp = zeros((len(x), self.n), float)
+			Mp = zeros((len(x), self.n))
 		if self.periodic: # Wrap out-of range points back in range.
 			u -= self.n*floor((u-self.spl.order)/self.n)
 			u = u.astype(int)
@@ -509,13 +509,13 @@ class spline_func:
 		u = ceil(s) # floaing point
 		
 		Mi = self.spl.calc_splcoef(u-s)
-		Mp = zeros((len(x), self.n), float)
+		Mp = zeros((len(x), self.n))
 		
 		n = 0
 		M = self.spl.M
 		r = self.spl.order
 		
-		Q = zeros((1, self.n), float)
+		Q = zeros((1, self.n))
 		if self.periodic:
 			add_matrix = wrap_add_matrix
 			u -= self.n*floor((u-self.spl.order)/self.n)
@@ -604,7 +604,7 @@ class spline_func:
 		M = self.spl.M
 		r = self.spl.order
 		
-		Q = zeros((1, self.n), float)
+		Q = zeros((1, self.n))
 		if self.periodic:
 			add_matrix = wrap_add_matrix
 		else:
@@ -654,7 +654,7 @@ class spline_func:
 		M = self.spl.M
 		r = self.spl.order
 		
-		Q = zeros((self.n, self.n), float)
+		Q = zeros((self.n, self.n))
 		if self.periodic:
 			add_matrix = wrap_add_matrix
 		else:
