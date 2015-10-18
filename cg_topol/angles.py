@@ -124,7 +124,7 @@ def angle_terms(pdb, mkterm):
             angle_index[name] = []
         angle_index[name].append((i,j,k))
 
-    print "%d Angle"%sum(map(len, angle_index.values()))
+    #print "%d Angle"%sum(map(len, angle_index.values()))
     terms = [mkterm(n,l) for n,l in angle_index.iteritems()]
     return FFconcat(terms)
 

@@ -92,17 +92,19 @@ class SplinePair(SplineTerm):
             raise RuntimeError, "Error! >1 energy derivative not "\
                                   "supported."
 
-# skip 3 => count 1,4 pairs
-def pair_terms(pdb, mkterm, skip=3):
-	xpair = []
-	for a in range(pdb.atoms):
-		xpair.append(set([a]))
-	for i in range(1,skip): # Extend table by 1 bond.
+# set join
+mconcat = lambda m: reduce(lambda x,y: x|y, m, set())
+# extend neighbors
+extend = lambda pdb, x: x | mconcat(pdb.conn[b] for b in x)
+
+# n = 4 => count 1,4 pairs
+def pair_terms(pdb, mkterm, n=4):
+        assert n >= 2, "Can't count self-pairs."
+        xpair = [set([a]) for a in range(pdb.atoms)]
+	for i in range(n-2): # Extend table by 1 bond.
 	    for a in range(pdb.atoms):
-		xpair[a] |= reduce(lambda x,y: x|y, \
-				[pdb.conn[b] for b in xpair[a]])
-	xpair = reduce(lambda x,y: x|y, \
-			[modprod([a],x) for a,x in enumerate(xpair)])
+		xpair[a] = extend(pdb, xpair[a])
+	xpair = mconcat([modprod([a],x) for a,x in enumerate(xpair)])
 	pair = []
 	for i in range(pdb.atoms-1):
 	    pair += [(i,j) for j in range(i+1,pdb.atoms)]
@@ -115,7 +117,34 @@ def pair_terms(pdb, mkterm, skip=3):
 		if ti > tj:
                     ti, tj = (tj, ti)
                     i, j = (j, i)
-		name = "%s-%s"%(ti,tj)
+		name = "%d+%s-%s"%(n,ti,tj)
+                if not pair_index.has_key(name):
+                    pair_index[name] = []
+                pair_index[name].append((i,j))
+        terms = [mkterm(name, l, pdb.L) \
+                        for name, l in pair_index.iteritems()]
+        return FFconcat(terms)
+
+# count only 1,n pairs
+def pair_n_terms(pdb, mkterm, n=4):
+        assert n >= 2, "Need at least 2 atoms to make a pair!"
+        xpair = [set([a]) for a in range(pdb.atoms)]
+
+	for i in range(n-2): # Extend table by 1 bond.
+	    for a in range(pdb.atoms):
+		xpair[a] = extend(pdb, xpair[a])
+
+        pair_n = [extend(pdb, x) - x for x in xpair]
+	pair_n = mconcat([modprod([a], x) for a,x in enumerate(pair_n)])
+
+	pair_index = {}
+	for i,j in pair_n:
+		ti = pdb.names[i][2]
+		tj = pdb.names[j][2]
+		if ti > tj:
+                    ti, tj = (tj, ti)
+                    i, j = (j, i)
+		name = "1,%d-%s-%s"%(n,ti,tj)
                 if not pair_index.has_key(name):
                     pair_index[name] = []
                 pair_index[name].append((i,j))

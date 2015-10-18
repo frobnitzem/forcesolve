@@ -4,10 +4,10 @@ from ucgrad import parseparam
 from bonds import bond_terms, SplineBond
 from torsions import torsion_terms, SplineTorsion
 from angles import angle_terms, SplineAngle
-from pairs import pair_terms, SplinePair
+from pairs import pair_terms, pair_n_terms, SplinePair
 from concat_term import FFconcat
 
-from pbonds import PolyBond
+from pbonds import PolyBond, PolyUB
 from ptorsions import PolyTorsion
 from pangles import PolyAngle
 from ljpairs import LJPair
@@ -49,6 +49,7 @@ def show_index(topol):
     print "%d total constraints." % len(topol.constraints)
     print
 
+# Traverse a tree of topology terms.
 def write_topol_r(t, pre, c):
     if hasattr(t, "terms"):
         i = 0

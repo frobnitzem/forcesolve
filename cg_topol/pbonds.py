@@ -46,3 +46,10 @@ class PolyBond(PolyTerm):
             return A, Ad
         raise RuntimeError, "Error! >1 energy derivative not "\
                               "supported."
+
+# UB is the same as a bond
+class PolyUB(PolyBond):
+    def __init__(self, name, angles):
+        PolyTerm.__init__(self, "pub_" + name, 2)
+        self.edges = set([(i, k) for i,j,k in angles])
+
