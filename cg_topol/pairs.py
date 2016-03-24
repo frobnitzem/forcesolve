@@ -97,6 +97,15 @@ mconcat = lambda m: reduce(lambda x,y: x|y, m, set())
 # extend neighbors
 extend = lambda pdb, x: x | mconcat(pdb.conn[b] for b in x)
 
+def orderset(a, x):
+    s = set()
+    for b in x:
+	if a > b:
+	    s.add((b,a))
+	else:
+	    s.add((a,b))
+    return s
+
 # n = 4 => count 1,4 pairs
 def pair_terms(pdb, mkterm, n=4):
         assert n >= 2, "Can't count self-pairs."
@@ -104,7 +113,7 @@ def pair_terms(pdb, mkterm, n=4):
 	for i in range(n-2): # Extend table by 1 bond.
 	    for a in range(pdb.atoms):
 		xpair[a] = extend(pdb, xpair[a])
-	xpair = mconcat([modprod([a],x) for a,x in enumerate(xpair)])
+	xpair = mconcat([orderset(a,x) for a,x in enumerate(xpair)])
 	pair = []
 	for i in range(pdb.atoms-1):
 	    pair += [(i,j) for j in range(i+1,pdb.atoms)]
@@ -123,9 +132,11 @@ def pair_terms(pdb, mkterm, n=4):
                 pair_index[name].append((i,j))
         terms = [mkterm(name, l, pdb.L) \
                         for name, l in pair_index.iteritems()]
+        print "%d types of >= 1,%d pairs."%(len(terms), n)
         return FFconcat(terms)
 
 # count only 1,n pairs
+# still add to pdb.pair
 def pair_n_terms(pdb, mkterm, n=4):
         assert n >= 2, "Need at least 2 atoms to make a pair!"
         xpair = [set([a]) for a in range(pdb.atoms)]
@@ -135,7 +146,8 @@ def pair_n_terms(pdb, mkterm, n=4):
 		xpair[a] = extend(pdb, xpair[a])
 
         pair_n = [extend(pdb, x) - x for x in xpair]
-	pair_n = mconcat([modprod([a], x) for a,x in enumerate(pair_n)])
+	pair_n = mconcat([orderset(a, x) for a,x in enumerate(pair_n)])
+	pdb.pair |= pair_n
 
 	pair_index = {}
 	for i,j in pair_n:
@@ -150,5 +162,6 @@ def pair_n_terms(pdb, mkterm, n=4):
                 pair_index[name].append((i,j))
         terms = [mkterm(name, l, pdb.L) \
                         for name, l in pair_index.iteritems()]
+        print "%d types of special 1,%d pairs"%(len(terms),n)
         return FFconcat(terms)
 

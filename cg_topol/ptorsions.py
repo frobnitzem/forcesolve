@@ -27,10 +27,31 @@ from concat_term import FFconcat
 from numpy import *
 from torsions import cross_product
 
+# [cos(n phi)] = V . [(cos phi)^n]
+V = array([[ 1, 0, 0, 0, 0],
+           [ 0, 1, 0, 0, 0],
+	   [-1, 0, 2, 0, 0],
+	   [ 0,-3, 0, 4, 0],
+	   [ 1, 0,-8, 0, 8]])
+
+# Generate constraints for all but cos(n phi + d)
+# since d = 0 or 180, it only changes the sign, so
+# the constraints are unaffected.
+def gen_constrain_n(n):
+    c = zeros((4,5))
+    m = 1./sum(V[n]*V[n])
+    for i in range(4):
+	j = i + (i >= n) # logical index, skipping over n
+	c[i,j] = 1.0 # e_j
+	c[i] -= V[n]*V[n,j]*m
+    return c
+
 # Adds the "tor" forcefield term into the list of atomic interactions.
 class PolyTorsion(PolyTerm):
-    def __init__(self, name, tors):
+    def __init__(self, name, tors, constrain_n=False):
         PolyTerm.__init__(self, "ptor_" + name, 4)
+	if constrain_n != False:
+	    self.constraints = gen_constrain_n(constrain_n(name))
         self.tors = tors
 	
     def energy(self, c, x):
