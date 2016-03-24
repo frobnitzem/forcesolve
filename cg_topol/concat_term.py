@@ -33,8 +33,6 @@ from numpy import array, concatenate, zeros
 # concatenate FFTerms
 class FFconcat:
     def __init__(self, terms):
-        if len(terms) == 0:
-            raise ValueError, "FFconcat requires terms"
         self.terms = terms
         self.params = sum(t.params for t in terms)
         self.hyp_params = sum(t.hyp_params for t in terms)
@@ -86,10 +84,12 @@ class FFconcat:
             r = [[] for i in range(order+1)]
             for t in self.terms:
                 u = t.design(x, order)
-                for i in range(order+1):
-                    r[i].append(u[i])
-            for i in range(order+1):
-                r[i] = concatenate(r[i], axis=-1)
+		if u[0] != []:
+		    for i in range(order+1):
+			r[i].append(u[i])
+	    if len(self.terms) > 0:
+		for i in range(order+1):
+		    r[i] = concatenate(r[i], axis=-1)
             return r
 
 def pad(x, st, sz):
