@@ -22,11 +22,16 @@
 # 12/10/2007
 # This work was supported by a DOE CSGF.
 
+use_ineq = False
+
 from numpy import *
 import numpy.linalg as la
 import numpy.random as rand
 from cg_topol.ucgrad import write_matrix, write_list
 from cg_topol import write_topol, show_index
+
+if use_ineq:
+    from quad_prog import quad_prog
 
 # cg_topol uses integrated first, second and third derivatives for prior which,
 # when multiplied by the corresponding values in alpha, serve to push the
@@ -129,9 +134,7 @@ class frc_match:
 			#print A[:,i]
 		return w, A
 
-# Append a set of data points to the present frc_match object.
-# Takes as input data from a single specified atom type which may contain
-# differing remote interaction types
+	# Append a set of data points to the present frc_match object.
 	def append(self, x,f):
 		chunk = 100
 		
@@ -225,8 +228,13 @@ class frc_match:
 		while delta > tol and iter < maxiter:
 		    iter += 1
 		    iC = self.calc_iC()
-		    theta = dot(self.z, self.DF)
-		    theta = la.solve(iC, theta)
+		    rhs = dot(self.z, self.DF) # weight residual by atom type
+		    if use_ineq: # solve with inequality constraints
+			theta = quad_prog(iC, -rhs, \
+					A = self.constraints,
+					b = zeros(len(self.constraints)))
+		    else:
+			theta = la.solve(iC, rhs)
 		    self.theta = theta
 		    
 		    az, ibz, aa, iba = self.calc_za_ab()

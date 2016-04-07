@@ -21,6 +21,7 @@ from numpy import array, concatenate, zeros
 #     ind    : [Int], -- start indices for ea. term coeff. set
 #     pri_rank : [Int] -- len=hyp_params list of alpha for beta-dist'n
 #     constraints : [Array Float (params,)],
+#     ineqs    : [Array Float (params,)],
 #
 #     energy : Array Float (params,) -> Array Float (N,3) -> Float,
 #     force  : Array Float (params,) -> Array Float (N,3) -> Array Float (N,3),
@@ -59,6 +60,14 @@ class FFconcat:
             self.constraints += map(lambda u: pad(u, i, self.params),
                                      t.constraints)
             i += t.params
+
+        # cut and paste for ineqs
+        i = 0
+        self.ineqs = []
+        #for t in self.terms:
+        #    self.ineqs += map(lambda u: pad(u, i, self.params),
+        #                             t.ineqs)
+        #    i += t.params
 
     # Misc. reductions
     def energy(self, c, x):

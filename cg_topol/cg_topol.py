@@ -7,6 +7,7 @@ from angles import angle_terms, SplineAngle
 from pairs import pair_terms, pair_n_terms, SplinePair
 from concat_term import FFconcat
 
+from poly_term import read_poly_term
 from pbonds import PolyBond, PolyUB
 from ptorsions import PolyTorsion
 from pangles import PolyAngle

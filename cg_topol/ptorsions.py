@@ -25,30 +25,39 @@ from poly_term import PolyTerm
 from bspline import Bspline
 from concat_term import FFconcat
 from numpy import *
+import numpy.linalg as la
 from torsions import cross_product
 
 # [cos(n phi)] = V . [(cos phi)^n]
-V = array([[ 1.,  0.,  0.,  0.,  0.,  0.,  0.],
+#V = array([[ 1.,  0.,  0.,  0.,  0.,  0.,  0.],
+#	   [ 0.,  1.,  0.,  0.,  0.,  0.,  0.],
+#	   [-1.,  0.,  2.,  0.,  0.,  0.,  0.],
+#	   [ 0., -3.,  0.,  4.,  0.,  0.,  0.],
+#	   [ 1.,  0., -8.,  0.,  8.,  0.,  0.],
+#          [ 0.,  5.,  0.,-20.,  0., 16.,  0.],
+#          [-1.,  0., 18.,  0.,-48.,  0., 32.]])
+W = array([[ 1.,  0.,  0.,  0.,  0.,  0.,  0.],
 	   [ 0.,  1.,  0.,  0.,  0.,  0.,  0.],
-	   [-1.,  0.,  2.,  0.,  0.,  0.,  0.],
-	   [ 0., -3.,  0.,  4.,  0.,  0.,  0.],
-	   [ 1.,  0., -8.,  0.,  8.,  0.,  0.],
-           [ 0.,  5.,  0.,-20.,  0., 16.,  0.],
-           [-1.,  0., 18.,  0.,-48.,  0., 32.]])
-
+	   [ 2.,  0.,  1.,  0.,  0.,  0.,  0.],
+           [ 0.,  3.,  0.,  1.,  0.,  0.,  0.],
+           [ 6.,  0.,  4.,  0.,  1.,  0.,  0.],
+           [ 0., 10.,  0.,  5.,  0.,  1.,  0.],
+           [20.,  0., 15.,  0.,  6.,  0.,  1.]])
+W[:,1:] *= 2.0
+W /= (2**arange(len(W)))[:,newaxis]
 
 # Generate constraints for all but cos(n phi + d)
 # since d = 0 or 180, it only changes the sign, so
 # the constraints are unaffected.
 def gen_constrain_n(n,m):
-    assert m >= n
-    c = zeros((m-1,m))
-    norm = 1./sum(V[n]*V[n])
-    for i in range(m-1):
-	j = i + (i >= n) # logical index, skipping over n
-	c[i,j] = 1.0 # e_j
-	c[i] -= V[n,:m]*V[n,j]*norm
-    return c
+    nparam = len(n)
+    if nparam == 0:
+	return identity(m)
+    un = [i for i in range(m) if i not in n]
+    if nparam > 1:
+	print "Using constraints: ", un
+	print transpose(W)[un] # gets a bunch of rows
+    return transpose(W)[un] # gets a bunch of rows
 
 # Adds the "tor" forcefield term into the list of atomic interactions.
 class PolyTorsion(PolyTerm):
