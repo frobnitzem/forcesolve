@@ -22,16 +22,16 @@
 # 12/10/2007
 # This work was supported by a DOE CSGF.
 
-use_ineq = False
-
 from numpy import *
 import numpy.linalg as la
 import numpy.random as rand
 from cg_topol.ucgrad import write_matrix, write_list
 from cg_topol import write_topol, show_index
 
-if use_ineq:
+try:
     from quad_prog import quad_prog
+except ImportError:
+    quad_prog = None
 
 # cg_topol uses integrated first, second and third derivatives for prior which,
 # when multiplied by the corresponding values in alpha, serve to push the
@@ -75,6 +75,7 @@ class frc_match:
 		
 		# Normalize.
 		self.orthonormalize_constraints(array(self.topol.constraints))
+                self.ineqs = array(self.topol.ineqs)
 		
 		#self.theta = self.theta_from_topol() # Parameters.
                 self.theta = zeros(self.topol.params)
@@ -229,11 +230,21 @@ class frc_match:
 		    iter += 1
 		    iC = self.calc_iC()
 		    rhs = dot(self.z, self.DF) # weight residual by atom type
-		    if use_ineq: # solve with inequality constraints
-			theta = quad_prog(iC, -rhs, \
+
+                    if len(self.ineqs) > 0 and quad_prog != None:
+                        # solve with inequality constraints
+                        if abs(self.constraints).max() < 1e-10:
+			  theta = quad_prog(iC, -rhs, \
+                                        G = self.ineqs, \
+                                        h = zeros(len(self.ineqs)))
+                        else:
+			  theta = quad_prog(iC, -rhs, \
+                                        G = self.ineqs, \
+                                        h = zeros(len(self.ineqs)), \
 					A = self.constraints,
 					b = zeros(len(self.constraints)))
 		    else:
+                        # TODO: hack by setting violated constraints to zero
 			theta = la.solve(iC, rhs)
 		    self.theta = theta
 		    

@@ -18,6 +18,7 @@ class SplineTerm:
                                    False, bspl.order-1, (x0,x0+L), name)
         self.name = name
         self.constraints = [self.f.integral(0, m)[0]]
+        self.ineqs = []
 
         scale = (m + 1.0)/abs(self.f.rng[1]**(m + 1.0) \
                               - self.f.rng[0]**(m + 1.0))

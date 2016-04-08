@@ -64,10 +64,9 @@ class FFconcat:
         # cut and paste for ineqs
         i = 0
         self.ineqs = []
-        #for t in self.terms:
-        #    self.ineqs += map(lambda u: pad(u, i, self.params),
-        #                             t.ineqs)
-        #    i += t.params
+        for t in self.terms:
+            self.ineqs += map(lambda u: pad(u, i, self.params), t.ineqs)
+            i += t.params
 
     # Misc. reductions
     def energy(self, c, x):

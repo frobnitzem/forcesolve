@@ -8,6 +8,7 @@ class PolyTerm:
         # first coeff = 0
         self.constraints = [zeros(self.params)]
         self.constraints[0][0] = 1.0
+        self.ineqs = []
         self.prior = []
         self.pri_rank = []
         self.ind = []
