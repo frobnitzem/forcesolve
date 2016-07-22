@@ -48,6 +48,7 @@ def show_index(topol):
     show_term(topol)
     print "%d total parameters." % topol.params
     print "%d total constraints." % len(topol.constraints)
+    print "%d total inequalities." % len(topol.ineqs)
     print
 
 # Traverse a tree of topology terms.

@@ -54,9 +54,6 @@ def gen_constrain_n(n,m):
     if nparam == 0:
 	return identity(m)
     un = [i for i in range(m) if i not in n]
-    if nparam > 1:
-	print "Using constraints: ", un
-	print transpose(W)[un] # gets a bunch of rows
     return transpose(W)[un] # gets a bunch of rows
 
 # Adds the "tor" forcefield term into the list of atomic interactions.

@@ -112,7 +112,7 @@ class frc_match:
 			self.type_index.append(tn)
 		self.mass = self.pdb.mass
 		self.nt = array(nt)
-                print self.nt, mass, self.type_index
+                #print self.nt, mass, self.type_index
 
 	# Estimate the actual dimensionality of iC.
 	def dimensionality(self, sigma_tol=1.0e-5):
@@ -232,14 +232,15 @@ class frc_match:
 		    rhs = dot(self.z, self.DF) # weight residual by atom type
 
                     if len(self.ineqs) > 0 and quad_prog != None:
+			print "        Using constrained solve."
                         # solve with inequality constraints
                         if abs(self.constraints).max() < 1e-10:
 			  theta = quad_prog(iC, -rhs, \
-                                        G = self.ineqs, \
+                                        G = -self.ineqs, \
                                         h = zeros(len(self.ineqs)))
                         else:
 			  theta = quad_prog(iC, -rhs, \
-                                        G = self.ineqs, \
+                                        G = -self.ineqs, \
                                         h = zeros(len(self.ineqs)), \
 					A = self.constraints,
 					b = zeros(len(self.constraints)))
