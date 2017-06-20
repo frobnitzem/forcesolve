@@ -12,6 +12,7 @@ from pbonds import PolyBond, PolyUB
 from ptorsions import PolyTorsion
 from pangles import PolyAngle
 from ljpairs import LJPair
+from pimprop import improper_terms, PolyImprop
 
 import os
 

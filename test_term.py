@@ -8,14 +8,15 @@ from num_deriv import num_deriv
 #term = PolyBond("test", [(0,1)])
 #term = PolyAngle("test", [(0,1,2), (1,2,3)]) # try 2 angles at once
 #term = PolyTorsion("test", [(0,1,2,3)])
-term = LJPair("test", [(0,1), (0,2), (0,3), (1,2), (1,3), (2,3)])
+#term = LJPair("test", [(0,1), (0,2), (0,3), (1,2), (1,3), (2,3)])
+term = PolyImprop("test", [(0,1,2,3), (3,1,4,2)])
 
 random.seed(1)
 # create a config.
 #x = zeros((4,3))
 #x[:,2] = arange(4)*1.2
 #x[1,0] = -0.2
-x = random.random((4,3))*10
+x = random.random((5,3))*10
 #print x
 
 # grab the derivative (shape = x.shape + (params,))
@@ -28,3 +29,4 @@ D2 = num_deriv(lambda x: term.design(x)[0], x)
 
 print abs(D2 - D) > 1e-5
 print abs(D - D2).max()
+

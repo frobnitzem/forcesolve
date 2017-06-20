@@ -34,8 +34,13 @@ class LJPair(PolyTerm):
     def __init__(self, name, edges, L=None):
         # internal vars
         PolyTerm.__init__(self, "ljpair_" + name, 2)
+	#self.ineqs = [array([0.,  0.0, 1.0]), 0.0,
+	#	      array([0.,  0.0,-1.0]), 100.0,
+	#	      array([0., -1.0, 0.0]), 0.0,
+	#	      array([0.,  1.0, 0.0]), -100.0]
 	self.ineqs = [array([0.,  0.0, 1.0]),
-		      array([0., -1.0, 0.0])]
+		      array([0., -1.0, 0.0]),
+		      array([0.,  1.0, 1.0])]
         self.edges = edges
         if L != None:
             self.periodic = True

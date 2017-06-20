@@ -1,4 +1,4 @@
-# 4-body torsional interactions
+# 4-body improper interactions
 
 # This file is part of ForceSolve, Copyright (C) 2008-2015 David M. Rogers.
 #
@@ -26,59 +26,36 @@ from bspline import Bspline
 from concat_term import FFconcat
 from numpy import *
 import numpy.linalg as la
+from ptorsions import torsionc, dtorsionc
 from torsions import cross_product
 
-# [cos(n phi)] = V . [(cos phi)^n]
-#V = array([[ 1.,  0.,  0.,  0.,  0.,  0.,  0.],
-#	   [ 0.,  1.,  0.,  0.,  0.,  0.,  0.],
-#	   [-1.,  0.,  2.,  0.,  0.,  0.,  0.],
-#	   [ 0., -3.,  0.,  4.,  0.,  0.,  0.],
-#	   [ 1.,  0., -8.,  0.,  8.,  0.,  0.],
-#          [ 0.,  5.,  0.,-20.,  0., 16.,  0.],
-#          [-1.,  0., 18.,  0.,-48.,  0., 32.]])
-W = array([[ 1.,  0.,  0.,  0.,  0.,  0.,  0.],
-	   [ 0.,  1.,  0.,  0.,  0.,  0.,  0.],
-	   [ 2.,  0.,  1.,  0.,  0.,  0.,  0.],
-           [ 0.,  3.,  0.,  1.,  0.,  0.,  0.],
-           [ 6.,  0.,  4.,  0.,  1.,  0.,  0.],
-           [ 0., 10.,  0.,  5.,  0.,  1.,  0.],
-           [20.,  0., 15.,  0.,  6.,  0.,  1.]])
-W[:,1:] *= 2.0
-W /= (2**arange(len(W)))[:,newaxis]
-
-# Generate constraints for all but cos(n phi + d)
-# since d = 0 or 180, it only changes the sign, so
-# the constraints are unaffected.
-def gen_constrain_n(n,m):
-    nparam = len(n)
-    if nparam == 0:
-	return identity(m)
-    un = [i for i in range(m) if i not in n]
-    return transpose(W)[un] # gets a bunch of rows
-
 # Adds the "tor" forcefield term into the list of atomic interactions.
-class PolyTorsion(PolyTerm):
-    def __init__(self, name, tors, constrain_n=False):
-	if constrain_n != False:
-	    PolyTerm.__init__(self, "ptor_" + name, 6)
-	    self.constraints = gen_constrain_n(constrain_n(name),7)
-	else:
-	    PolyTerm.__init__(self, "ptor_" + name, 4)
+class PolyImprop(PolyTerm):
+    def __init__(self, name, tors):
         self.tors = tors
+
+        self.hyp_params = 0
+        self.params = 1
+        self.name = "pimprop_" + name
+        self.constraints = []
+	self.ineqs = [array([1.0])]
+        self.prior = []
+        self.pri_rank = []
+        self.ind = []
 	
     def energy(self, c, x):
-        A = torsionc(array([[x[...,i,:]-x[...,j,:],\
+        A = atorsion(array([[x[...,i,:]-x[...,j,:],\
                              x[...,k,:]-x[...,j,:],\
                              x[...,l,:]-x[...,k,:]] \
                                  for i,j,k,l in self.tors]))
-        return sum(self.f.y(c, A), -1)
+        return self.c[0]*sum(A*A, -1)
     
     def force(self, c, x):
-        t, dt = dtorsionc(array([[x[...,i,:]-x[...,j,:],\
+        t, dt = datorsion(array([[x[...,i,:]-x[...,j,:],\
                                   x[...,k,:]-x[...,j,:],\
                                   x[...,l,:]-x[...,k,:]] \
                                   for i,j,k,l in self.tors]))
-        u, du = self.f.y(c, t, 1)
+        u, du = self.c[0]*t*t, self.c[0]*2.0*t
         en = sum(u, -1)
         F = zeros(x.shape)
         for z,(i,j,k,l) in enumerate(alist):
@@ -93,14 +70,14 @@ class PolyTorsion(PolyTerm):
     def design(self, x, order=0):
         A = []
         if order == 0:
-            tor = torsionc(array([[x[...,i,:]-x[...,j,:],\
+            tor = atorsion(array([[x[...,i,:]-x[...,j,:],\
                                    x[...,k,:]-x[...,j,:],\
                                    x[...,l,:]-x[...,k,:]] \
                                      for i,j,k,l in self.tors]))
             return sum(self.spline(tor, order),-2)
         elif order == 1:
             Ad = zeros(x.shape+(self.params,))
-            t, dt = dtorsionc(array([[x[...,i,:]-x[...,j,:],\
+            t, dt = datorsion(array([[x[...,i,:]-x[...,j,:],\
                                       x[...,k,:]-x[...,j,:],\
                                       x[...,l,:]-x[...,k,:]] \
                                          for i,j,k,l in self.tors]))
@@ -120,39 +97,68 @@ class PolyTorsion(PolyTerm):
             raise RuntimeError, "Error! >1 energy derivative not "\
                                   "supported."
 
-# cosine of torsion
-def torsionc(x):
-    trsp = range(len(x.shape))
-    # Operate on last 2 dim.s (atom and xyz) + (..., number)
-    trsp = trsp[1:2] + trsp[-1:] + trsp[2:-1] + trsp[:1]
-    x = transpose(x, trsp)
+    # Used to construct vectors which multiply parameters.
+    # If x is a N-dim vector, the return value is an (nd+1)xNxP matrix
+    def spline(self, x, nd=0):
+	if nd == None:
+	    return x[..., newaxis]**2
+        Mp = x[newaxis,...]**(2 - arange(nd+1).reshape([nd+1]+[1]*len(x.shape)))
+        # d^n/dx^n [x^a] = x^{a-n} prod_{i=0}^{n-1} a - i
+        #                = x^{a-n} prod_{j=a+1-n}^a j
+	if nd >= 1:
+	    Mp[1:] *= 2.0
+	    if nd >= 3:
+		Mp[3:] = 0.0
+        return Mp[...,newaxis] # P = 1
 
-    A0 = cross_product(x[0],x[1])
-    A1 = cross_product(x[2],x[1])
-    return sum(A0*A1,0)/sqrt(sum(A0*A0,0)*sum(A1*A1,0))
+    def write(self, pre, c, mode='w'):
+        name = pre + self.name + ".impr"
+        out = open(name, mode)
+        out.write("#IMPR %s %e\n"%(self.name,c[0]))
+        out.close()
+
+# arccos(cosine of torsion) -- is in [0,pi]
+def atorsion(x):
+    return arccos(torsionc(x))
 
 # derivative of cosine of torsion
-def dtorsionc(x):
-    trsp = range(len(x.shape)) # (tor serial, tor atom, ..., xyz)
-    trsp = trsp[1:2] + trsp[-1:] + trsp[2:-1] + trsp[:1]
-    x = transpose(x, trsp) # (tor atom, xyz, ..., tor serial)
+def datorsion(x):
+    x, dx = dtorsionc(x)
+    return arccos(x), -dx/sqrt(1.0-x*x)[...,newaxis,newaxis]
 
-    d = zeros(x.shape)
-    
-    A0 = cross_product(x[0],x[1]) # -(a ^ b)^*
-    A1 = cross_product(x[2],x[1]) # -(c ^ b)^*
-    x0 = sqrt(sum(A0*A0,0))
-    x1 = sqrt(sum(A1*A1,0))
-    A0 /= x0
-    A1 /= x1
+# List out all improper terms (atoms with 3 bonds)
+def improper_terms(pdb, mkterm):
+    tors = set()
+    for i in range(pdb.atoms):
+	if len(pdb.conn[i]) == 3:
+	    tors.add((i,) + tuple(pdb.conn[i]))
 
-    cphi = sum(A0*A1, 0)
-    # a x (b x c) = - a . (b ^ c) = b a.c - c a.b
-    d[0] = cross_product(x[1], A1 - cphi*A0)/x0
-    d[2] = cross_product(x[1], A0 - cphi*A1)/x1
-    d[1] = -cross_product(x[0], A1 - cphi*A0)/x0 \
-           -cross_product(x[2], A0 - cphi*A1)/x1
+    imp_index = {}
+    for i,j,k,l in tors:
+        ti = pdb.names[i][2]
+        tj = pdb.names[j][2]
+        tk = pdb.names[k][2]
+        tl = pdb.names[l][2]
+        if tk > tl: # Bubble sort
+	    tk, tl = tl, tk
+	    k, l   = l, k
+	if tj > tk:
+	    tj, tk = tk, tj
+	    j, k   = k, j
+	    if tk > tl: # Bubble sort
+		tk, tl = tl, tk
+		k,   l = l, k
+	if tk == tl: # according to the CHARMM docs, we swap again!
+            tj, tk, tl = tk, tl, tj
+            j, k, l    = k, l, j
+        name = "%s-%s-%s-%s"%(ti,tj,tk,tl)
+        if not imp_index.has_key(name):
+            imp_index[name] = []
+        imp_index[name].append((i,j,k,l))
 
-    trsp = range(2, len(x.shape)) + [0,1] # Move (atom,xyz) to last 2 dim.s
-    return cphi, transpose(d, trsp)
+    #pdb.impr = imp_index
+
+    print "%d Impropers"%sum(map(len, imp_index.values()))
+    terms = [mkterm(n,l) for n,l in imp_index.iteritems()]
+    return FFconcat(terms)
 

@@ -63,8 +63,8 @@ def esum(rij, nbr, L, iL, Eta, M2):
     Eta2 = Eta*Eta
     fac = Eta*2/pi**0.5
     iV = iL[0,0]*iL[1,1]*iL[2,2]
-    e = zeros(len(ri))
-    f = zeros(ri.shape)
+    e = zeros(len(rij))
+    f = zeros(rij.shape)
 
     rij -= L[2]*floor(rij[...,2]/L[2,2]+0.5)[...,newaxis]
     rij -= L[1]*floor(rij[...,1]/L[1,1]+0.5)[...,newaxis]
@@ -125,29 +125,50 @@ def test():
 cfac = 332.0716 # kcal/mol * Ang / esu^2
 # E = cfac * q_i q_j / r_{ij}
 # q_atoms = dot(MQ, q), MQ.shape = (N, Nchg)
-def ES_frc(mask, pairs, x, MQ, q, L):
+def ES_seed(x, mask, pairs, MQ, L):
+    if L == None: # non-periodic
+	return inf_ES_seed(x, pairs, MQ)
     iL = la.inv(L)
     Eta, M2 = Eta_M2(prod(diag(L)))
-    qat = dot(MQ, q)
 
-    f = zeros(x.shape)
-    J = zeros(x.shape + (len(q),))
+    P = MQ.shape[-1]
+    fs = zeros(x.shape + (P,P))
     for i,j in mask:
         e, fq = esum(x[:,i,:]-x[:,j,:], True, L, iL, Eta, M2)
-        f[:,i] += fq*qat[i]*qat[j]
-        f[:,j] -= fq*qat[i]*qat[j]
-        J[:,i] += fq[...,newaxis]*qat[j]*MQ[i]
-                + fq[...,newaxis]*qat[i]*MQ[j]
-        J[:,j] -= fq[...,newaxis]*qat[j]*MQ[i]
-                - fq[...,newaxis]*qat[i]*MQ[j]
+	S = MQ[i,:,newaxis]*MQ[j,newaxis,:] \
+	  + MQ[j,:,newaxis]*MQ[i,newaxis,:]
+	fs[:,i] += fq[...,newaxis,newaxis]*S
+	fs[:,j] -= fq[...,newaxis,newaxis]*S
 
     for i,j in pairs:
         e, fq = esum(x[:,i,:]-x[:,j,:], False, L, iL, Eta, M2)
-        f[:,i] += fq*qat[i]*qat[j]
-        f[:,j] -= fq*qat[i]*qat[j]
-        J[:,i] += fq[...,newaxis]*qat[j]*MQ[i]
-                + fq[...,newaxis]*qat[i]*MQ[j]
-        J[:,j] -= fq[...,newaxis]*qat[j]*MQ[i]
-                - fq[...,newaxis]*qat[i]*MQ[j]
-    return f*cfac, J*cfac
+	S = MQ[i,:,newaxis]*MQ[j,newaxis,:] \
+	  + MQ[j,:,newaxis]*MQ[i,newaxis,:]
+	fs[:,i] += fq[...,newaxis,newaxis]*S
+	fs[:,j] -= fq[...,newaxis,newaxis]*S
+
+    return fs*cfac
+
+# Non-periodic version.
+def inf_ES_seed(x, pairs, MQ):
+    P = MQ.shape[-1]
+    fs = zeros(x.shape + (P,P))
+    for i,j in pairs:
+	r = x[:,i] - x[:,j]
+	r *= (sum(r*r, -1)**-1.5)[...,newaxis]
+	S = MQ[i,:,newaxis]*MQ[j,newaxis,:] \
+	  + MQ[j,:,newaxis]*MQ[i,newaxis,:]
+	fs[:,i] += r[...,newaxis,newaxis]*S
+	fs[:,j] -= r[...,newaxis,newaxis]*S
+
+    return fs*cfac
+
+def ES_frc(q, fs, *args):
+    return 0.5*dot(dot(fs, q), q)
+
+def dES_frc(q, fs, *args):
+    J = dot(fs, q)
+    #f = 0.5*dot(J, q)
+    #return f, J
+    return J
 
