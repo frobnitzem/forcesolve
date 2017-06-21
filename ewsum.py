@@ -15,6 +15,7 @@ def seq(z):
             i = -i-(i>=0) # -1, 1, -2, 2, ...
 
 # Enumerate all lattice vectors, m^T L, within R2 of x0
+# Returns (m, m^T L - x0, |m^T L - x0|^2)
 def lat_pts(x0, L, R2):
     pt = zeros(3)
     m = zeros(3)

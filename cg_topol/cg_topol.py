@@ -68,7 +68,7 @@ def write_topol(t, pre, c):
     write_topol_r(t, os.path.join(pre, ""), c)
 
 def ensure_dir(f):
-    d = os.path.dirname(f)
+    d = f #os.path.dirname(f)
     if not os.path.exists(d):
         os.makedirs(d)
 

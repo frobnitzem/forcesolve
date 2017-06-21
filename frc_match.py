@@ -25,6 +25,7 @@
 from numpy import *
 import numpy.linalg as la
 import numpy.random as rand
+from os import path
 from cg_topol.ucgrad import write_matrix, write_list
 from cg_topol import write_topol, show_index
 from scipy.optimize import fmin_cg #, newton_krylov
@@ -32,6 +33,7 @@ from scipy.optimize import fmin_cg #, newton_krylov
 try:
     from quad_prog import quad_prog
 except ImportError:
+    print("Error Importing CVXOPT (required for parameter constraints).")
     quad_prog = None
 
 # cg_topol uses integrated first, second and third derivatives for prior which,
@@ -575,7 +577,7 @@ class frc_match:
             else:
                     avg_v = 1./self.z
                     s_v = zeros(len(self.z))
-            lam = open(name+"v.out", 'w')
+            lam = open(path.join(name,"v.out"), 'w')
             lam.write("#type\tv\t<v>\tsigma_v\n")
             for t,l2,avg,sd in zip(self.type_names, 1./self.z, \
                                                     avg_v, s_v):
@@ -588,7 +590,7 @@ class frc_match:
                     return reduce(lambda a,b: a+get_names(b), t.terms, [])
                 return [t.name]
             tname = get_names(self.topol)
-            df = open(name+"df.out", 'w')
+            df = open(path.join(name,"df.out"), 'w')
             df.write("#type\t<stdev>\n")
             for df2, (i,P) in zip(self.df2, self.topol.prior):
                 df.write( "%-16s %e\n"%(tname[i], sqrt(df2)) )

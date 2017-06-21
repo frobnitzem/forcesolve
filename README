@@ -16,7 +16,24 @@ ForceSolve Copyright 2008 David M. Rogers.
     http://forceSolve.sourceforge.net/. And see http://www.gnu.org/licenses/
     for a copy of the GNU GPL.
 
-== IF YOU USE THIS SOFTWARE ==
+Dependencies
+============
+
+To use linear parameter constraints, ForceSolve requires the
+CVXOPT package (http://cvxopt.org).  Of course, it also
+relies heavily on numpy/scipy.
+
+
+Getting Started
+===============
+
+There are working examples in the tutorial/ directory:
+*
+
+
+IF YOU USE THIS SOFTWARE
+========================
+
 Please cite the following reference:
 Cite ForceSolve like a book published by Sourceforge:
 David M. Rogers and Thomas L. Beck. ForceSolve (Sourceforge, Chicago IL, USA, 2008).

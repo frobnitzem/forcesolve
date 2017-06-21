@@ -28,10 +28,12 @@ from poly_term import PolyTerm
 from bonds import bond, dbond
 from concat_term import FFconcat
 from numpy import *
+from ewsum import lat_pts
 
 # Adds the "pair" forcefield term into the list of atomic interactions.
+# If present, L should be a 3x3 lower-diagonal array of translation row-vectors.
 class LJPair(PolyTerm):
-    def __init__(self, name, edges, L=None):
+    def __init__(self, name, edges, L=None, R2=11.0**2):
         # internal vars
         PolyTerm.__init__(self, "ljpair_" + name, 2)
 	#self.ineqs = [array([0.,  0.0, 1.0]), 0.0,
@@ -42,24 +44,33 @@ class LJPair(PolyTerm):
 		      array([0., -1.0, 0.0]),
 		      array([0.,  1.0, 1.0])]
         self.edges = edges
+	self.R2 = R2
         if L != None:
             self.periodic = True
             self.box_L = L
         else:
             self.periodic = False
 
+    def deltas(self, x): # get pair distance array
+        if self.periodic: # Wrap for periodicity.
+	    delta = []
+	    xv = reshape(x, (-1,x.shape[-2],3))
+	    for i,j in self.edges:
+		for p in x[:,j] - x[:,i]:
+		    for z in lat_pts(delta, self.R2, self.box_L):
+			delta.append(-z[1])
+	    return array(delta)
+	else:
+	    return array([x[...,j,:]-x[...,i,:] for i,j in self.edges])
+
 # Returns the energy of configuration x and/or the conserved force on each atom.
     def energy(self, c, x):
-        delta = array([x[...,j,:]-x[...,i,:] for i,j in self.edges])
-        if self.periodic: # Wrap for periodicity.
-            delta -= self.box_L * floor(delta/self.box_L+0.5)
+	delta = self.deltas(x)
         b = bond(delta)**-6
         return sum(info.f.y(c, b), -1)
 	
     def force(self, c, x):
-        delta = array([x[...,j,:]-x[...,i,:] for i,j in self.edges])
-        if self.periodic: # Wrap for periodicity.
-            delta -= self.box_L * floor(delta/self.box_L+0.5)
+        delta = self.deltas(x)
         r, db = dbond(delta) # r, dr/dx
         u, du = self.f.y(c, r**-6, 1) # f(r^-6), df/du (u = r^-6)
         # du/dr = -6 r^-7
@@ -75,9 +86,7 @@ class LJPair(PolyTerm):
     # The design array multiplies the spline coefficients to produce the
     # total bonded energy/force.
     def design(self, x, order=0):
-        delta = array([x[...,j,:]-x[...,i,:] for i,j in self.edges])
-        if self.periodic: # Wrap for periodicity.
-            delta -= self.box_L * floor(delta/self.box_L+0.5)
+        delta = self.deltas(x)
 
         if order == 0:
             return sum(self.spline(bond(delta)**-6, order), -2)

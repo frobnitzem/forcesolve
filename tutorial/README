@@ -1,4 +1,4 @@
-This directory contains files needed for a quick hoe-to tutorial on using this set of programs for computing and using coarse-grained Hamiltonians.
+This directory contains files needed for a quick how-to tutorial on using this set of programs for computing and using coarse-grained Hamiltonians.
 
 
 Right now there is just the water system, designed to show that we can get the initial forcefield back to good accuracy.
