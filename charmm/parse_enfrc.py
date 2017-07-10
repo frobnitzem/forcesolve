@@ -29,7 +29,7 @@ def read_crds(path, N):
             i = int(name.split('.')[-2])
             u[i] = read_vecs(os.path.join(path,name), N, off)
 
-    n = list(set(x.keys()) & set(f.keys())) # set intersection
+    n = list(set(x.keys()) & set(de.keys())) # set intersection
     n.sort() # sorted frame numbers
     S = len(n)
     xf = zeros((S, 2, N, 3))
