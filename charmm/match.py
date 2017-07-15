@@ -4,6 +4,9 @@
 # used by frc_solve.
 
 import sys, os, argparse
+dn = os.path.dirname
+sys.path.append(dn(dn(os.path.abspath(__file__))))
+
 from numpy import load, newaxis, sum, zeros
 from psf import read_psf
 from frc_match import *
