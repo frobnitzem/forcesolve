@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 import sys, os
+dn = os.path.dirname
+sys.path.append(dn(dn(os.path.abspath(__file__))))
+
 from psf import read_psf
 from cg_topol import *
 from numpy import array, sqrt, sum, argmax, newaxis, abs, dot, pi, arange
