@@ -29,7 +29,7 @@ import numpy.linalg as la
 from ptorsions import torsionc, dtorsionc
 from torsions import cross_product
 
-# Adds the "tor" forcefield term into the list of atomic interactions.
+# Adds the "pimprop" forcefield term into the list of atomic interactions.
 class PolyImprop(PolyTerm):
     def __init__(self, name, tors):
         self.tors = tors

@@ -92,12 +92,12 @@ class FFconcat:
             r = [[] for i in range(order+1)]
             for t in self.terms:
                 u = t.design(x, order)
-		if u[0] != []:
-		    for i in range(order+1):
-			r[i].append(u[i])
-	    if len(self.terms) > 0:
-		for i in range(order+1):
-		    r[i] = concatenate(r[i], axis=-1)
+                if not isinstance(u[0], list):
+                    for i in range(order+1):
+                        r[i].append(u[i])
+            if len(self.terms) > 0:
+                for i in range(order+1):
+                    r[i] = concatenate(r[i], axis=-1)
             return r
 
 def pad(x, st, sz):
