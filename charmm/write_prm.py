@@ -114,7 +114,7 @@ def prm_of_param(path):
 	    # just writes the line, "#IMPR <name> <K>"
 	    line = open(name).read()[0].split()
 	    id = line[1].split("_")[1].split("-")
-	    impropers[id] = float(line[2])
+	    impropers[tuple(id)] = float(line[2])
     return PRM(atoms, bonds, angles, dihedrals, impropers, nonbonded)
 
 if __name__=="__main__":
