@@ -58,9 +58,19 @@ def Eta_M2(V, tol=1e-8):
                 lambda x: 1./x + fac, C/fac)
     return Eta, M2
 
+def rev2D(x):
+    return array([[x[2,2], x[2,1], x[2,0]],
+                  [x[1,2], x[1,1], x[1,0]],
+                  [x[0,2], x[0,1], x[0,0]]])
+
+def rev(x):
+    return array([x[2], x[1], x[0]])
+
 # Ewald sum for 2-particle interactions.
-# here, rij = ri - rj, and f = -dE(rij)/dri
-def esum(rij, nbr, L, iL, Eta, M2):
+# Here, rij = ri - rj, and f = -dE(rij)/dri
+# As it's a pairwise energy, the Ewald correction constants are not included.
+# count = 1 => full interaction, 0 => only LR interaction (subtract 1/r)
+def esum(rij, count, L, iL, Eta, M2, recip_only=False):
     Eta2 = Eta*Eta
     fac = Eta*2/pi**0.5
     iV = iL[0,0]*iL[1,1]*iL[2,2]
@@ -70,30 +80,35 @@ def esum(rij, nbr, L, iL, Eta, M2):
     rij -= L[2]*floor(rij[...,2]/L[2,2]+0.5)[...,newaxis]
     rij -= L[1]*floor(rij[...,1]/L[1,1]+0.5)[...,newaxis]
     rij -= L[0]*floor(rij[...,0]/L[0,0]+0.5)[...,newaxis]
-    sij = dot(rij, iL)
+    #sij = dot(rij, iL)
 
-    g = lat_pts(zeros(3), identity(3), M2)
+    # iL is lower-diagonal
+    # and its columns represent reciprocal lattice vectors.
+    g = lat_pts(zeros(3), rev2D(iL.transpose()), M2)
     g.next() # manual origin contribution
-    for m, _, m2 in g:
-        s = sin(2*pi*sum(sij*m, -1))
-        c = sqrt(1.0 - s*s)
+    for _, m, m2 in g:
+        m = rev(m)
+        t = 2*pi*sum(rij*m, -1)
+        s = sin(t)
+        c = cos(t)
         phi = exp(-m2*pi*pi/Eta2)/m2
         e += c*phi
-        f += s*phi*m
+        f += (s*phi)[:,newaxis]*m
 
     e *= iV/pi
-    f = 2.*iV * dot(f, transpose(iL))
+    f *= 2.*iV
+
+    if recip_only:
+        return e, f
 
     g = lat_pts(zeros(3), L, M2*iV**-0.66666)
-    _, dr, d2 = g.next() # nearest image depends on nbr flag
+    _, dr, d2 = g.next() # nearest image subject to mask
     d2 = sum(rij*rij, -1)
     dist = sqrt(d2)
-    if nbr:
-        e += -erf(Eta*dist)/dist
-        f += ((fac*exp(-Eta2*d2) -  erf(Eta*dist)/dist)/d2)[...,newaxis] * rij
-    else:
-        e += erfc(Eta*dist)/dist
-        f += ((fac*exp(-Eta2*d2) + erfc(Eta*dist)/dist)/d2)[...,newaxis] * rij
+    # count = 1 => full count, 0 => mask out
+    h = (count - erf(Eta*dist))/dist
+    e += h
+    f += ((fac*exp(-Eta2*d2) + h)/d2)[...,newaxis] * rij
     for _, dr, d2 in g:
         q = rij - dr
         d2 = sum(q*q, -1)
@@ -108,13 +123,19 @@ def test():
     L = array([[10., 0., 0.],
                [0., 10., 0.],
                [0., 0., 10.]])
+    L = array([[12., 0., 0.],
+               [1., 11., 0.],
+               [0., 0., 10.]])
     iL = la.inv(L)
 
     d = arange(200)*0.1-10.05
     dx = array([0., 0., 1.])*d[:,newaxis]
 
     Eta, M2 = Eta_M2(prod(diag(L)))
-    e, f = esum(dx, False, L, iL, Eta, M2)
+    #print Eta, M2
+    Eta = 0.5
+    M2 = 0.5**2
+    e, f = esum(dx, 1.0, L, iL, Eta, M2, True)
 
     M = zeros((200,5))
     M[:,0] = d
@@ -124,25 +145,25 @@ def test():
 
 # Calculate ES residual and Jacobian
 cfac = 332.0716 # kcal/mol * Ang / esu^2
-# E = cfac * q_i q_j / r_{ij}
+# E_ij = mask[i,j] * cfac * q_i q_j / r_{ij}
 # q_atoms = dot(MQ, q), MQ.shape = (N, Nchg)
 def ES_seed(x, mask, pairs, MQ, L):
     if L == None: # non-periodic
-	return inf_ES_seed(x, pairs, MQ)
+	return inf_ES_seed(x, mask, pairs, MQ)
     iL = la.inv(L)
     Eta, M2 = Eta_M2(prod(diag(L)))
 
     P = MQ.shape[-1]
     fs = zeros(x.shape + (P,P))
-    for i,j in mask:
-        e, fq = esum(x[:,i,:]-x[:,j,:], True, L, iL, Eta, M2)
+    for i,j,c in mask:
+        e, fq = esum(x[:,i,:]-x[:,j,:], c, L, iL, Eta, M2)
 	S = MQ[i,:,newaxis]*MQ[j,newaxis,:] \
 	  + MQ[j,:,newaxis]*MQ[i,newaxis,:]
 	fs[:,i] += fq[...,newaxis,newaxis]*S
 	fs[:,j] -= fq[...,newaxis,newaxis]*S
 
     for i,j in pairs:
-        e, fq = esum(x[:,i,:]-x[:,j,:], False, L, iL, Eta, M2)
+        e, fq = esum(x[:,i,:]-x[:,j,:], 1.0, L, iL, Eta, M2)
 	S = MQ[i,:,newaxis]*MQ[j,newaxis,:] \
 	  + MQ[j,:,newaxis]*MQ[i,newaxis,:]
 	fs[:,i] += fq[...,newaxis,newaxis]*S
@@ -151,9 +172,20 @@ def ES_seed(x, mask, pairs, MQ, L):
     return fs*cfac
 
 # Non-periodic version.
-def inf_ES_seed(x, pairs, MQ):
+def inf_ES_seed(x, mask, pairs, MQ):
     P = MQ.shape[-1]
     fs = zeros(x.shape + (P,P))
+    for i,j,c in mask:
+        if c <= 0.0:
+            continue
+	r = x[:,i] - x[:,j]
+	r *= (sum(r*r, -1)**-1.5)[...,newaxis]
+	S = MQ[i,:,newaxis]*MQ[j,newaxis,:] \
+	  + MQ[j,:,newaxis]*MQ[i,newaxis,:]
+        S *= c
+	fs[:,i] += r[...,newaxis,newaxis]*S
+	fs[:,j] -= r[...,newaxis,newaxis]*S
+
     for i,j in pairs:
 	r = x[:,i] - x[:,j]
 	r *= (sum(r*r, -1)**-1.5)[...,newaxis]
@@ -173,3 +205,5 @@ def dES_frc(q, fs, *args):
     #return f, J
     return J
 
+if __name__=="__main__":
+    test()
