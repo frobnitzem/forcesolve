@@ -17,7 +17,7 @@ def mat(x):
 	return matrix(x.tolist(), (len(x), 1), 'd')
 
 def arr(m):
-    if m == None:
+    if m is None:
 	return None
     s = m.size
     if s[0] == 1: # vectors
