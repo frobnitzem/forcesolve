@@ -144,7 +144,8 @@ class frc_match:
                 #print self.nt, mass, self.type_index
 
 	# Estimate the actual dimensionality of iC.
-	def dimensionality(self, sigma_tol=1.0e-5):
+        # if fix == True, constrain all 'free' directions to zero.
+	def dimensionality(self, sigma_tol=1.0e-5, fix=True):
 		tol = sigma_tol*sigma_tol
 		itol = 1.0/tol
 		iC = self.calc_iC()
@@ -154,14 +155,18 @@ class frc_match:
 		print "Free directions = %d, Fixed directions = %d"%(\
 					free_dim, fixed_dim)
 		if free_dim > 0:
+                    C = []
 		    for i in range(len(w)):
 			if w[i] > tol:
 				continue
 			print "\tValue %e == "%(w[i]) +\
 			  str(dot(dot(iC,A[:,i]), A[:,i]))
 			w[i] = 10.0*itol
+                        C.append(A[:,i])
 			#print "\tVector:"
 			#print A[:,i]
+                    if fix:
+                        self.constraints = concatenate((self.constraints, C))
 		return w, A
 
 	# Append a set of data points to the present frc_match object.

@@ -1,4 +1,4 @@
-from ucgrad import *
+from numpy import zeros, log, sqrt, dot, newaxis, sum
 from scipy.special import erf, erfc
 
 sign = lambda x: 1-2*(x<0)
@@ -144,12 +144,12 @@ def test():
     write_matrix("ew_pot.dat", M)
 
 # Calculate ES residual and Jacobian
-cfac = 332.0716 # kcal/mol * Ang / esu^2
+# cfac = 332.0716 # kcal/mol * Ang / esu^2
 # E_ij = mask[i,j] * cfac * q_i q_j / r_{ij}
 # q_atoms = dot(MQ, q), MQ.shape = (N, Nchg)
-def ES_seed(x, mask, pairs, MQ, L):
+def ES_seed(x, mask, pairs, MQ, L, cfac = 332.0716):
     if L == None: # non-periodic
-	return inf_ES_seed(x, mask, pairs, MQ)
+	return inf_ES_seed(x, mask, pairs, MQ, cfac)
     iL = la.inv(L)
     Eta, M2 = Eta_M2(prod(diag(L)))
 
@@ -172,7 +172,7 @@ def ES_seed(x, mask, pairs, MQ, L):
     return fs*cfac
 
 # Non-periodic version.
-def inf_ES_seed(x, mask, pairs, MQ):
+def inf_ES_seed(x, mask, pairs, MQ, cfac = 332.0716):
     P = MQ.shape[-1]
     fs = zeros(x.shape + (P,P))
     for i,j,c in mask:

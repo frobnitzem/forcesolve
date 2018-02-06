@@ -31,9 +31,8 @@ There are working examples in the tutorial/ directory:
 * water       -- force matching QM forces on water
 * coarsen     -- untested coarse-graining matching for DNA
 * mm          -- test-run for molecular mechanics using fitted forces
-* charmm-buta -- parameterization of butane within the CHARMM forcefield
 * misc        -- scripts for generating test data
-
+* Parameterization within the CHARMM forcefield form has moved to [ChemParam](https://github.com/frobnitzem/chemparam).
 
 IF YOU USE THIS SOFTWARE
 ========================

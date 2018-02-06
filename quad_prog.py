@@ -9,7 +9,7 @@ from cvxopt import solvers, matrix #, spmatrix, mul
 import numpy.linalg as la
 
 def mat(x):
-    if x == None:
+    if x is None:
 	return None
     if len(x.shape) == 2: # gotta love fortran
 	return matrix(np.transpose(x).tolist(), x.shape, 'd')
@@ -42,7 +42,7 @@ def arr(m):
 def quad_prog(P, q, G=None,h=None, A=None,b=None, x0=None):
     assert len(P) == len(q) and len(P) == P.shape[1]
     P = 0.5*(P + np.transpose(P))
-    if G == None: # lsqlin will throw a fit
+    if G is None: # lsqlin will throw a fit
 	if A == None: # Totally unconstrained solve.
 	    return la.solve(P, -q)
 	n = len(A) # number of constraints

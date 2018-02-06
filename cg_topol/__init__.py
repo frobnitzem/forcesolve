@@ -24,6 +24,8 @@
 # This work was supported by a DOE CSGF.
 
 from cg_topol import *
+from ewsum import ES_seed, ES_frc, dES_frc, esum, lat_pts
 from pdb import PDB, build_pdb
+from edge import modprod
 #from bspline import *
 #from poly import *
