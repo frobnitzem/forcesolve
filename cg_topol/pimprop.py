@@ -151,7 +151,7 @@ def improper_terms(pdb, mkterm):
 	if tk == tl: # according to the CHARMM docs, we swap again!
             tj, tk, tl = tk, tl, tj
             j, k, l    = k, l, j
-        name = "%s-%s-%s-%s"%(ti,tj,tk,tl)
+        name = "%s_%s_%s_%s"%(ti,tj,tk,tl)
         if not imp_index.has_key(name):
             imp_index[name] = []
         imp_index[name].append((i,j,k,l))

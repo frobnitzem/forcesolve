@@ -82,7 +82,7 @@ def bond_terms(pdb, mkterm):
             ti, tj = (tj, ti)
             i, j = (j, i)
 
-        name = "%s-%s"%(ti, tj)
+        name = "%s_%s"%(ti, tj)
         if not bond_index.has_key(name):
             bond_index[name] = []
         bond_index[name].append((i,j))

@@ -126,7 +126,7 @@ def pair_terms(pdb, mkterm, n=4):
 		if ti > tj:
                     ti, tj = (tj, ti)
                     i, j = (j, i)
-		name = "%d+%s-%s"%(n,ti,tj)
+		name = "%d+%s_%s"%(n,ti,tj)
                 if not pair_index.has_key(name):
                     pair_index[name] = []
                 pair_index[name].append((i,j))
@@ -156,7 +156,7 @@ def pair_n_terms(pdb, mkterm, n=4):
 		if ti > tj:
                     ti, tj = (tj, ti)
                     i, j = (j, i)
-		name = "1,%d-%s-%s"%(n,ti,tj)
+		name = "1,%d_%s_%s"%(n,ti,tj)
                 if not pair_index.has_key(name):
                     pair_index[name] = []
                 pair_index[name].append((i,j))

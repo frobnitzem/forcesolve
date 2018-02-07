@@ -160,7 +160,7 @@ def torsion_terms(pdb, mkterm):
         if tj > tk or (tj == tk and ti > tl):
             ti, tj, tk, tl = (tl, tk, tj, ti)
             i, j, k, l = (l, k, j, i)
-        name = "%s-%s-%s-%s"%(ti,tj,tk,tl)
+        name = "%s_%s_%s_%s"%(ti,tj,tk,tl)
         if not tor_index.has_key(name):
             tor_index[name] = []
         tor_index[name].append((i,j,k,l))

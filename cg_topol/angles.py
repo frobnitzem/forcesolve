@@ -119,7 +119,7 @@ def angle_terms(pdb, mkterm):
             ti, tk = (tk, ti)
             i, k = (k, i)
 
-        name = "%s-%s-%s"%(ti,tj,tk)
+        name = "%s_%s_%s"%(ti,tj,tk)
         if not angle_index.has_key(name):
             angle_index[name] = []
         angle_index[name].append((i,j,k))
