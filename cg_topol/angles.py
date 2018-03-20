@@ -104,11 +104,12 @@ def danglec(x):
 	A *= rijk_inv[..., newaxis] # d(cth) / di and dk
 	return cth, A
 
-def angle_terms(pdb, mkterm):
-    angles = []
-    for j in range(pdb.atoms):
-        angles += [(i,j,k) for i,k in modprod(pdb.conn[j], \
-                        pdb.conn[j]) if i < k]
+def angle_terms(pdb, mkterm, angles=None):
+    if angles is None:
+        angles = []
+        for j in range(pdb.atoms):
+            angles += [(i,j,k) for i,k in modprod(pdb.conn[j], \
+                            pdb.conn[j]) if i < k]
             
     angle_index = {}
     for i,j,k in angles:

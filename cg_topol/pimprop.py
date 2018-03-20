@@ -127,11 +127,12 @@ def datorsion(x):
     return arccos(x), -dx/sqrt(1.0-x*x)[...,newaxis,newaxis]
 
 # List out all improper terms (atoms with 3 bonds)
-def improper_terms(pdb, mkterm):
-    tors = set()
-    for i in range(pdb.atoms):
-	if len(pdb.conn[i]) == 3:
-	    tors.add((i,) + tuple(pdb.conn[i]))
+def improper_terms(pdb, mkterm, tors=None):
+    if tors is None:
+        tors = set()
+        for i in range(pdb.atoms):
+            if len(pdb.conn[i]) == 3:
+                tors.add((i,) + tuple(pdb.conn[i]))
 
     imp_index = {}
     for i,j,k,l in tors:

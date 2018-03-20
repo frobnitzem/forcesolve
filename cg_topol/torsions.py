@@ -143,12 +143,13 @@ def cross_product(x,y):
                         x[2]*y[0] - x[0]*y[2], \
                         x[0]*y[1] - x[1]*y[0] ] )
 
-def torsion_terms(pdb, mkterm):
-    tors = set()
-    for j,k in pdb.edge:
-        tors |= set([(i,j,k,l) for i,l in modprod(pdb.conn[j]-set([k]), \
-                                                  pdb.conn[k]-set([j])) \
-                                       if i != l])
+def torsion_terms(pdb, mkterm, tors=None):
+    if tors is None:
+        tors = set()
+        for j,k in pdb.edge:
+            tors |= set([(i,j,k,l) for i,l in modprod(pdb.conn[j]-set([k]), \
+                                                      pdb.conn[k]-set([j])) \
+                                           if i != l])
 
     tor_index = {}
     for i,j,k,l in tors:

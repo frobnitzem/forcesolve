@@ -1,4 +1,4 @@
-from numpy import zeros, log, sqrt, dot, newaxis, sum
+from numpy import *
 from scipy.special import erf, erfc
 
 sign = lambda x: 1-2*(x<0)

@@ -73,9 +73,11 @@ def dbond(x):
 
 # Create an FFTerm from all bonds in PDB
 # PDB -> (name : String -> edges : Set (Int,Int) -> FFTerm) -> FFTerm
-def bond_terms(pdb, mkterm):
+def bond_terms(pdb, mkterm, edge=None):
+    if edge is None:
+        edge = pdb.edge
     bond_index = {}
-    for i,j in pdb.edge:
+    for i,j in edge:
         ti = pdb.names[i][2]
         tj = pdb.names[j][2]
         if ti > tj: # "Strike that; reverse it." -- Willy Wonka.

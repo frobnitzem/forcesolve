@@ -137,17 +137,19 @@ def pair_terms(pdb, mkterm, n=4):
 
 # count only 1,n pairs
 # still add to pdb.pair
-def pair_n_terms(pdb, mkterm, n=4):
+def pair_n_terms(pdb, mkterm, n=4, pair_n=None):
         assert n >= 2, "Need at least 2 atoms to make a pair!"
-        xpair = [set([a]) for a in range(pdb.atoms)]
+        if pair_n is None:
+            xpair = [set([a]) for a in range(pdb.atoms)]
 
-	for i in range(n-2): # Extend table by 1 bond.
-	    for a in range(pdb.atoms):
-		xpair[a] = extend(pdb, xpair[a])
+            for i in range(n-2): # Extend table by 1 bond.
+                for a in range(pdb.atoms):
+                    xpair[a] = extend(pdb, xpair[a])
 
-        pair_n = [extend(pdb, x) - x for x in xpair]
-	pair_n = mconcat([orderset(a, x) for a,x in enumerate(pair_n)])
-	pdb.pair |= pair_n
+            pair_n = [extend(pdb, x) - x for x in xpair]
+            pair_n = mconcat([orderset(a, x) for a,x in enumerate(pair_n)])
+
+        pdb.pair |= set(pair_n)
 
 	pair_index = {}
 	for i,j in pair_n:
