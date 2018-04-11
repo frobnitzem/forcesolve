@@ -144,26 +144,28 @@ def test():
     write_matrix("ew_pot.dat", M)
 
 # Calculate ES residual and Jacobian
+# mask is a dictionary mapping ordered (i,j) pairs to scaling factors
+# for the nearest-neighbor 1/r (Coulomb) energy interaction.
+# All other (non-self) pairwise interactions are included with a scale of 1.
+#
 # cfac = 332.0716 # kcal/mol * Ang / esu^2
-# E_ij = mask[i,j] * cfac * q_i q_j / r_{ij}
+# E_ij = mask[(i,j)] * cfac * q_i q_j / r_{ij}
 # q_atoms = dot(MQ, q), MQ.shape = (N, Nchg)
-def ES_seed(x, mask, pairs, MQ, L, cfac = 332.0716):
+def ES_seed(x, mask, MQ, L, cfac = 332.0716):
     if L == None: # non-periodic
-	return inf_ES_seed(x, mask, pairs, MQ, cfac)
+	return inf_ES_seed(x, mask, MQ, cfac)
     iL = la.inv(L)
     Eta, M2 = Eta_M2(prod(diag(L)))
 
     P = MQ.shape[-1]
     fs = zeros(x.shape + (P,P))
-    for i,j,c in mask:
+    for i in range(x.shape[1]-1):
+      for j in range(i+1, x.shape[1]):
+        try:
+            c = mask[(i,j)]
+        except KeyError:
+            c = 1.0
         e, fq = esum(x[:,i,:]-x[:,j,:], c, L, iL, Eta, M2)
-	S = MQ[i,:,newaxis]*MQ[j,newaxis,:] \
-	  + MQ[j,:,newaxis]*MQ[i,newaxis,:]
-	fs[:,i] += fq[...,newaxis,newaxis]*S
-	fs[:,j] -= fq[...,newaxis,newaxis]*S
-
-    for i,j in pairs:
-        e, fq = esum(x[:,i,:]-x[:,j,:], 1.0, L, iL, Eta, M2)
 	S = MQ[i,:,newaxis]*MQ[j,newaxis,:] \
 	  + MQ[j,:,newaxis]*MQ[i,newaxis,:]
 	fs[:,i] += fq[...,newaxis,newaxis]*S
@@ -172,25 +174,23 @@ def ES_seed(x, mask, pairs, MQ, L, cfac = 332.0716):
     return fs*cfac
 
 # Non-periodic version.
-def inf_ES_seed(x, mask, pairs, MQ, cfac = 332.0716):
+def inf_ES_seed(x, mask, MQ, cfac = 332.0716):
     P = MQ.shape[-1]
     fs = zeros(x.shape + (P,P))
-    for i,j,c in mask:
-        if c <= 0.0:
-            continue
+
+    for i in range(x.shape[1]-1):
+      for j in range(i+1, x.shape[1]):
+        try:
+            c = mask[(i,j)]
+            if c <= 0.0:
+                continue
+        except KeyError:
+            c = 1.0
 	r = x[:,i] - x[:,j]
 	r *= (sum(r*r, -1)**-1.5)[...,newaxis]
 	S = MQ[i,:,newaxis]*MQ[j,newaxis,:] \
 	  + MQ[j,:,newaxis]*MQ[i,newaxis,:]
         S *= c
-	fs[:,i] += r[...,newaxis,newaxis]*S
-	fs[:,j] -= r[...,newaxis,newaxis]*S
-
-    for i,j in pairs:
-	r = x[:,i] - x[:,j]
-	r *= (sum(r*r, -1)**-1.5)[...,newaxis]
-	S = MQ[i,:,newaxis]*MQ[j,newaxis,:] \
-	  + MQ[j,:,newaxis]*MQ[i,newaxis,:]
 	fs[:,i] += r[...,newaxis,newaxis]*S
 	fs[:,j] -= r[...,newaxis,newaxis]*S
 

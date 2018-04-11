@@ -255,7 +255,7 @@ class frc_match:
 		dt += self.theta0 - t0
 	    self.dtheta += self.theta0 - t0
 	    self.theta0 = t0
-	    self.recompute_lin()
+            self.recompute_lin()
 
 	# Re-compute the linear parts of the fit.
 	# This must be called if the nonlinear coeffs. change.
