@@ -59,11 +59,9 @@ def gen_constrain_n(n,m):
 # Adds the "tor" forcefield term into the list of atomic interactions.
 class PolyTorsion(PolyTerm):
     def __init__(self, name, tors, constrain_n=False):
+        PolyTerm.__init__(self, "ptor_" + name, 6)
         if constrain_n != False and constrain_n(name) is not None:
-            PolyTerm.__init__(self, "ptor_" + name, 6)
 	    self.constraints = gen_constrain_n(constrain_n(name),7)
-	else:
-	    PolyTerm.__init__(self, "ptor_" + name, 5)
         self.tors = tors
 	
     def energy(self, c, x):

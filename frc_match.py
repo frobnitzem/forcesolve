@@ -364,7 +364,7 @@ class frc_match:
                 self.constraints = orthonormalize(constraints)
 
 	# Find maximum likelihood estimate.
-	def maximize(self, tol=1.0e-5, maxiter=10):
+	def maximize(self, tol=1.0e-5, maxiter=100):
 		if self.S < 1:
 			raise ProgramError, "Error! no data has been collected!"
 		
