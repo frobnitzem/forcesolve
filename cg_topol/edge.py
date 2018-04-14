@@ -86,3 +86,42 @@ def modprod(*a):
     del b
     return c
 
+################ old 1,n pair finding code ####################
+# set join
+mconcat = lambda m: reduce(lambda x,y: x|y, m, set())
+# extend neighbors
+extend = lambda pdb, x: x | mconcat(pdb.conn[b] for b in x)
+
+def orderset(a, x):
+    s = set()
+    for b in x:
+	if a > b:
+	    s.add((b,a))
+	else:
+	    s.add((a,b))
+    return s
+
+# n = 4 => include 1,4 pairs, but exclude 1,2 and 1,3
+# builds an excluded pair list
+def pair_excl(pdb, n=4):
+    assert n >= 2, "Can't count self-pairs."
+    xpair = [set([a]) for a in range(pdb.atoms)]
+    for i in range(n-2): # Extend table by 1 bond.
+        for a in range(pdb.atoms):
+            xpair[a] = extend(pdb, xpair[a])
+    xpair = mconcat([orderset(a,x) for a,x in enumerate(xpair)])
+    return xpair
+
+# find 1,n pairs
+def pair_n(pdb, n=4):
+    assert n >= 2, "Need at least 2 atoms to make a pair!"
+    xpair = [set([a]) for a in range(pdb.atoms)]
+
+    for i in range(n-2): # Extend table by 1 bond.
+        for a in range(pdb.atoms):
+            xpair[a] = extend(pdb, xpair[a])
+
+    pair_n = [extend(pdb, x) - x for x in xpair]
+    pair_n = mconcat([orderset(a, x) for a,x in enumerate(pair_n)])
+    return pair_n
+

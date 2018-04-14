@@ -31,7 +31,7 @@ from numpy import *
 # Adds the "angle" forcefield term into the list of atomic interactions.
 class SplineAngle(SplineTerm):
     def __init__(self, name, angs):
-        SplineTerm.__init__(self, "angle_" + name, Bspline(4), 90, -1.0, 2.0, 0)
+        SplineTerm.__init__(self, name, Bspline(4), 90, -1.0, 2.0, 0)
         self.angs = angs
 
     def energy(self, c, x): # Requires commit.

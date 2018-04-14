@@ -1,10 +1,10 @@
 from pdb import build_pdb
 from ucgrad import parseparam
 
-from bonds import bond_terms, SplineBond
-from torsions import torsion_terms, SplineTorsion
-from angles import angle_terms, SplineAngle
-from pairs import pair_terms, pair_n_terms, SplinePair
+from bonds import SplineBond
+from torsions import SplineTorsion
+from angles import SplineAngle
+from pairs import SplinePair
 from concat_term import FFconcat
 
 from poly_term import read_poly_term
@@ -12,28 +12,22 @@ from pbonds import PolyBond, PolyUB
 from ptorsions import PolyTorsion
 from pangles import PolyAngle
 from ljpairs import LJPair
-from pimprop import improper_terms, PolyImprop
+from pimprop import PolyImprop
+
+from read_term import read_terms
 
 import os
 
-RequiredParams = ["EXPDB", "CONST_DIR"]
+RequiredParams = ["EXPDB", "TERMS"]
 def cg_topol(pfile):
     params = parseparam(pfile, RequiredParams)
     if params == -1:
         raise InputError, "Invald topology file."
 
     pdb = build_pdb(params)
-    terms = []
-    if params.has_key("BOND"):
-        terms.append(bond_terms(pdb, SplineBond))
-    if params.has_key("ANGLE"):
-        terms.append(angle_terms(pdb, SplineAngle))
-    if params.has_key("TORSION"):
-        terms.append(torsion_terms(pdb, SplineTorsion))
-    if params.has_key("PAIR"):
-        terms.append(pair_terms(pdb, SplinePair))
+    top = read_terms(pdb, params['TERMS'][0][0])
 
-    return FFconcat(terms), pdb
+    return top, pdb
 
 ######## These lines are a bit of a hack ########
 # since they assume more than the published CgTopol API...

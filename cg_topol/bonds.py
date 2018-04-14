@@ -8,7 +8,7 @@ from numpy import *
 class SplineBond(SplineTerm):
     def __init__(self, name, edges):
         # internal vars
-        SplineTerm.__init__(self, "bond_" + name, Bspline(4), 40, 0.0, 4.0, 2)
+        SplineTerm.__init__(self, name, Bspline(4), 40, 0.0, 4.0, 2)
         self.edges = edges
 
     def energy(self, c, x):

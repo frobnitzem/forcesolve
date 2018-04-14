@@ -1,8 +1,7 @@
 # Read term.py files
 # TODO: - add Ewald term
-#       - reverse sense of Pair-s
 
-import imp
+#import imp
 from edge import modprod
 from concat_term import FFconcat
 
@@ -245,25 +244,78 @@ class Term:
         self.gen = gen # e.g. Conn(1,2)
 
     # Group all terms by types of the atoms involved.
-    def run(self, pdb):
+    def build(self, pdb):
         index = {}
-        for ijk, typ in self.run(pdb):
+        for ijk, typ in self.gen.run(pdb):
             name = "_".join(typ)
             if not index.has_key(name):
                 index[name] = set()
-            index[name].add(ijk)
-        print( "%d unique %s terms"%( \
+            index[name].add(tuple(map(pred, ijk)))
+        print( "%d/%d unique %s terms"%( len(index), \
                 sum(map(len, index.values())), self.name) )
-        terms = [self.cl(name+"_"+n,l) for n,l in index.iteritems()]
+        terms = [self.cl(self.name+"_"+n,l) for n,l in index.iteritems()]
+        return FFconcat(terms)
+
+def srt2(i,j):
+    if i > j:
+        return j,i
+    return i,j
+
+class PairTerm:
+    def __init__(self, name, cl, gen):
+        self.name = name # e.g. "pair_1,4"
+        self.cl = cl # e.g. SplinePair
+        self.gen = gen # e.g. Conn(1,2)
+
+    # Group all terms by types of the atoms involved.
+    def build(self, pdb):
+        unt = list( set( name[2] for name in pdb.names ) )
+        unt.sort()
+        ant = dict((t,[]) for t in unt) # atoms with type 't'
+        aex = {} # exclusions with type 'ti,tj'
+        for i,name in enumerate(pdb.names):
+            ant[name[2]].append(i)
+        for i in range(len(unt)):
+            for j in range(i, len(unt)):
+                aex[(unt[i], unt[j])] = set()
+
+        for ij, typ in self.gen.run(pdb):
+            aex[typ].add( srt2(ij[0]-1, ij[1]-1) )
+
+        index = {}
+        count = 0
+        for i,t in enumerate(unt):
+            for j in range(i, len(unt)): # all pairs of types
+                u  = unt[j]
+                ex = aex[(t,u)]
+                aa = [k for k in ant[t] \
+                        if not all(srt2(k,z) in ex for z in ant[u] \
+                                                    if z != k)]
+                bb = [k for k in ant[u] \
+                        if not all(srt2(z,k) in ex for z in ant[t] \
+                                                    if z != k)]
+                if len(aa) > 0 and len(bb) > 0:
+                    index["%s_%s"%(t,u)] = ex, aa, bb
+                    count += len(aa)*len(bb)
+        print( "%d/%d unique %s terms"%(
+                len(index), count, self.name) )
+        terms = [ self.cl(self.name+"_"+n, l[0], excl=l[1:]) \
+                    for n,l in index.iteritems() ]
+
         return FFconcat(terms)
 
 # Read and interpret the term file.
 def read_terms(pdb, name):
-    mod = imp.load_source("TermFile", name)
-    if not hasattr(mod, 'terms'):
+    #mod = imp.load_source("TermFile", name)
+    #if not hasattr(mod, 'terms'):
+    #    raise KeyError, "Term File: %s does not define 'terms'"%(name)
+    #terms = mod.terms
+
+    exec(open(name).read())
+    if not locals().has_key('terms'):
         raise KeyError, "Term File: %s does not define 'terms'"%(name)
 
-    return map(lambda t: t.run(pdb), mod.terms)
+    return FFconcat( [t.build(pdb) for t in terms] )
 
 # 2-atom graph: 1-2 (a)
 # 3-atom graph: 1-2-3 (a) | 1-2-3..1(b) [a is a subgraph of b]
@@ -301,20 +353,35 @@ def read_terms(pdb, name):
 
 if __name__=="__main__":
     from pdb import PDB
-    pdb = PDB([ ("1",1,'H'),
-                ("2",1,'C'),
-                ("3",1,'C'),
-                ("4",1,'H'),
-                ("5",1,'H') ],
-               [], [], edge=[(0,1), (1,2), (2,3), (1,4)])
+    pdb = PDB([ ("1",1,'H3'),
+                ("2",1,'H3'),
+                ("3",1,'H3'),
+                ("4",1,'C3'),
+                ("5",1,'H2'),
+                ("6",1,'H2'),
+                ("7",1,'C2'),
+                ("8",1,'H2'),
+                ("9",1,'H2'),
+                ("10",1,'C2'),
+                ("11",1,'H3'),
+                ("12",1,'H3'),
+                ("13",1,'H3'),
+                ("14",1,'C3') ],
+               [], [], edge=[(0,3), (1,3), (2,3), (3,6),
+                             (4,6), (5,6), (6,9),
+                             (7,9), (8,9), (9,13),
+                             (10,13), (11,13), (12,13)])
     #def f(i,j):
     #    return i == 4 or j == 4
     #sel = Conn(1,2) * Type('C', 'H') | Conn(1,3) * IdFn(f)
-    sel = OOP()
+    #sel = OOP()
     #sel = Conn(1,2,3)
     #sel = Conn(1,3)
     #sel = ( Conn(1,2,3,4) | (Conn(1,3,2,1) & Id(1,None,None,1)) ) \
     #            & Type(None, 'C', 'C', None)
     #sel = Conn(1,2) | Conn(1,3) | Conn(1,4)
-    print set(sel.run(pdb))
+    #print set(sel.run(pdb))
+    top = read_terms(pdb, '../share/vanilla.py')
+    from cg_topol import show_index
+    show_index(top)
 

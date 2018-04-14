@@ -9,7 +9,7 @@ from bonds import bond, dbond
 class PolyBond(PolyTerm):
     def __init__(self, name, edges):
         # internal vars
-        PolyTerm.__init__(self, "pbond_" + name, 2)
+        PolyTerm.__init__(self, name, 2)
 	self.ineqs = [array([0.,  0.0, 1.0]),
 		      array([0., -1.0, 0.0])]
         self.edges = edges

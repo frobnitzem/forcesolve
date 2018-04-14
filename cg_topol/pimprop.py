@@ -36,7 +36,7 @@ class PolyImprop(PolyTerm):
 
         self.hyp_params = 0
         self.params = 1
-        self.name = "pimprop_" + name
+        self.name = name
         self.constraints = []
 	self.ineqs = [array([1.0])]
         self.prior = []

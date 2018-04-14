@@ -32,7 +32,7 @@ from numpy import *
 # Adds the "tor" forcefield term into the list of atomic interactions.
 class SplineTorsion(SplineTerm):
     def __init__(self, name, tors):
-        SplineTerm.__init__(self, "tor_" + name, Bspline(4), 180, None, 2*pi, 0)
+        SplineTerm.__init__(self, name, Bspline(4), 180, None, 2*pi, 0)
         self.tors = tors
 	
     def energy(self, c, x):

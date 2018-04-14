@@ -24,39 +24,86 @@
 # University of Cincinnati
 # This work was supported by a DOE CSGF.
 
+from bspline import Bspline
 from spline_term import SplineTerm
 from edge import modprod
 from bonds import bond, dbond
 from concat_term import FFconcat
 from numpy import *
 
-# Adds the "pair" forcefield term into the list of atomic interactions.
-class SplinePair(SplineTerm):
-    def __init__(self, name, edges, L=None):
-        # internal vars
-        SplineTerm.__init__(self, "pair_" + name, Bspline(6), 170, 0.0, 17.0, 2)
-        self.edges = edges
-        if L != None:
-            self.periodic = True
-            self.box_L = L
+# Generate the actual pairs to consider.
+def ex_gen(edges, excl):
+    if excl is None:
+        for i,j in edges:
+            yield i,j
+    else:
+        if excl[0][0] == excl[1][0]: # same list
+           for ii,i in enumerate(excl[0][:-1]):
+               for j in excl[1][ii+1:]:
+                   if (i,j) in edges:
+                       continue
+                   yield i,j
         else:
-            self.periodic = False
+            for i in excl[0]:
+                for j in excl[1]:
+                    if (min(i,j),max(i,j)) in edges:
+                        continue
+                    yield i,j
+
+def pbc_delta(x, edges, excl, L):
+    delta = []
+    xv = reshape(x, (-1,x.shape[-2],3))
+    N = x.shape[-2]
+    for i,j in ex_gen(edges, excl):
+	for p in x[:,j] - x[:,i]:
+	    for z in lat_pts(delta, self.R2, self.box_L):
+		delta.append(-z[1])
+    return array(delta)
+
+def calc_delta(x, edges, excl, L):
+    if L is not None:
+        return pbc_delta(x, edges, L)
+    if excl is None:
+        return array([x[...,j,:]-x[...,i,:] for i,j in edges])
+    if excl[0][0] == excl[1][0]: # same list
+        N = len(excl[0])*(len(excl[0])-1)/2
+    else:
+        N = len(excl[0])*len(excl[1])
+    delta = zeros(x.shape[:-2] + (N - len(edges),3))
+    k = 0
+    for i,j in ex_gen(edges, excl):
+        if (i,j) in edges:
+            continue
+        delta[...,k,:] = x[...,j,:]-x[...,i,:]
+        k += 1
+    assert k == delta.shape[-2]
+    return delta
+
+# Adds the "pair" forcefield term into the list of atomic interactions.
+# The default (excl == None) is to treat 'edges' as pairs to *include*.
+# If excl == ([i], [j]), then 'edges' is the *exclude* list instead,
+# and all pair interactions between atoms in list [i] and [j] are
+# computed unless they are in 'edges'.
+# If present, L should be a 3x3 lower-diagonal array of translation row-vectors.
+class SplinePair(SplineTerm):
+    def __init__(self, name, edges, L=None, excl=None):
+        # internal vars
+        SplineTerm.__init__(self, name, Bspline(6), 100, 0.0, 11.0, 2)
+        self.edges = set( (min(e[0],e[1]), max(e[0],e[1])) for e in edges
+                            if e[0] != e[1] )
+        self.excl = excl
+        self.L = L
 
 # Returns the energy of configuration x and/or the conserved force on each atom.
     def energy(self, c, x):
         self.f.c = c
-        delta = array([x[...,j,:]-x[...,i,:] for i,j in self.edges])
-        if self.periodic: # Wrap for periodicity.
-            delta -= self.box_L * floor(delta/self.box_L+0.5)
+        delta = calc_delta(x, self.edges, self.excl, self.L)
         A = bond(delta)
-        return sum(info.f.y(A), -1)
+        return sum(self.f.y(A), -1)
 	
     def force(self, c, x):
         self.f.c = c
-
-        delta = array([x[...,j,:]-x[...,i,:] for i,j in self.edges])
-        if self.periodic: # Wrap for periodicity.
-            delta -= self.box_L * floor(delta/self.box_L+0.5)
+        delta = calc_delta(x, self.edges, self.excl, self.L)
         b, db = dbond(delta)
         u, du = self.f.y(b, 1)
 
@@ -71,16 +118,14 @@ class SplinePair(SplineTerm):
     # total bonded energy/force.
     def design_pair(self, x, order=0):
         A = []
-        delta = array([x[...,j,:]-x[...,i,:] for i,j in self.edges])
-        if self.periodic: # Wrap for periodicity.
-            delta -= self.box_L * floor(delta/self.box_L+0.5)
+        delta = calc_delta(x, self.edges, self.excl, self.L)
 
         if order == 0:
             return sum(self.spline(bond(delta), order),-2)
         elif order == 1:
-            Ad = zeros(x.shape + (info.f.n,))
+            Ad = zeros(x.shape + (self.f.n,))
             b,db = dbond(delta)
-            spl, dspl = info.spline(b, order)
+            spl, dspl = self.spline(b, order)
             for k,(i,j) in enumerate(plist):
                 Ad[...,i,:,:] -= db[...,k,:,newaxis] \
                                 * dspl[...,k,newaxis,:]
@@ -91,79 +136,4 @@ class SplinePair(SplineTerm):
         else:
             raise RuntimeError, "Error! >1 energy derivative not "\
                                   "supported."
-
-# set join
-mconcat = lambda m: reduce(lambda x,y: x|y, m, set())
-# extend neighbors
-extend = lambda pdb, x: x | mconcat(pdb.conn[b] for b in x)
-
-def orderset(a, x):
-    s = set()
-    for b in x:
-	if a > b:
-	    s.add((b,a))
-	else:
-	    s.add((a,b))
-    return s
-
-# n = 4 => count 1,4 pairs
-def pair_terms(pdb, mkterm, n=4):
-        assert n >= 2, "Can't count self-pairs."
-        xpair = [set([a]) for a in range(pdb.atoms)]
-	for i in range(n-2): # Extend table by 1 bond.
-	    for a in range(pdb.atoms):
-		xpair[a] = extend(pdb, xpair[a])
-	xpair = mconcat([orderset(a,x) for a,x in enumerate(xpair)])
-	pair = []
-	for i in range(pdb.atoms-1):
-	    pair += [(i,j) for j in range(i+1,pdb.atoms)]
-	pdb.pair = set(pair)-xpair
-
-	pair_index = {}
-	for i,j in pdb.pair:
-		ti = pdb.names[i][2]
-		tj = pdb.names[j][2]
-		if ti > tj:
-                    ti, tj = (tj, ti)
-                    i, j = (j, i)
-		name = "%d+%s_%s"%(n,ti,tj)
-                if not pair_index.has_key(name):
-                    pair_index[name] = []
-                pair_index[name].append((i,j))
-        terms = [mkterm(name, l, pdb.L) \
-                        for name, l in pair_index.iteritems()]
-        print "%d types of >= 1,%d pairs."%(len(terms), n)
-        return FFconcat(terms)
-
-# count only 1,n pairs
-# still add to pdb.pair
-def pair_n_terms(pdb, mkterm, n=4, pair_n=None):
-        assert n >= 2, "Need at least 2 atoms to make a pair!"
-        if pair_n is None:
-            xpair = [set([a]) for a in range(pdb.atoms)]
-
-            for i in range(n-2): # Extend table by 1 bond.
-                for a in range(pdb.atoms):
-                    xpair[a] = extend(pdb, xpair[a])
-
-            pair_n = [extend(pdb, x) - x for x in xpair]
-            pair_n = mconcat([orderset(a, x) for a,x in enumerate(pair_n)])
-
-        pdb.pair |= set(pair_n)
-
-	pair_index = {}
-	for i,j in pair_n:
-		ti = pdb.names[i][2]
-		tj = pdb.names[j][2]
-		if ti > tj:
-                    ti, tj = (tj, ti)
-                    i, j = (j, i)
-		name = "1,%d_%s_%s"%(n,ti,tj)
-                if not pair_index.has_key(name):
-                    pair_index[name] = []
-                pair_index[name].append((i,j))
-        terms = [mkterm(name, l, pdb.L) \
-                        for name, l in pair_index.iteritems()]
-        print "%d types of special 1,%d pairs"%(len(terms),n)
-        return FFconcat(terms)
 

@@ -31,7 +31,7 @@ from numpy import *
 # Adds the "angle" forcefield term into the list of atomic interactions.
 class PolyAngle(PolyTerm):
     def __init__(self, name, angs):
-        PolyTerm.__init__(self, "pangle_" + name, 2)
+        PolyTerm.__init__(self, name, 2)
         self.angs = angs
 	self.ineqs = [array([0.,  0.0, 1.0]),
 		      array([0., -1.0, 0.0])]

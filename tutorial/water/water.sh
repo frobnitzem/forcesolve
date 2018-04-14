@@ -22,7 +22,7 @@ trjconv -f run.trr -o run.pdb -s run.tpr
 
 # Create the .x and .f files using numerical differencing (which adds some error, but its easy to show and tell.)
 python <<EOF
-# I suggest copying ucgrad to /usr/lib/python?.?/site-packages so this will work
+# I suggest adding the directory with ucgrad to PYTHONPATH so this will work
 from ucgrad import *
 
 pdb, x = read_pdb("run.pdb")

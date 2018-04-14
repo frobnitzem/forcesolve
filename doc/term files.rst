@@ -33,13 +33,17 @@ a list of Term objects::
     Term( "angle",    PolyAngle,   Conn(1,2,3) ),
     Term( "torsion",  PolyTorsion, Conn(1,2,3,4) ),
     Term( "improper", PolyImprop,  OOP() ),
-    Term( "pair",     SplinePair,  Conn(1,2) || Conn(1,3) || Conn(1,4) )
+    PairTerm("ljpair_4+",  LJPair, Conn(1,2) | Conn(1,3))
   ]
 
 The example term file above illustrates the basic idea.
 Each `Term` is created by assigning an arbitrary (but unique) name,
 selecting the term type, and providing an atom selection.
 Atom selections are documented in the next section.
+There is a special `PairTerm` object that takes an
+*exclusion* selection list instead of an inclusion selection.
+For `PairTerm`-s, every (non-self) pair of atoms is included except
+those that match the selection.
 The list of implemented term types includes:
 
 ============= ===== ===========================================
@@ -82,6 +86,17 @@ Up to 4 neighbors are supported.  Re-ordering is
 allowed, for example `(1,3)` and `(3,1)` both give
 an equivalent selection of pairs of end-atoms
 involved in an angle.::
+
+  a & b (aka a * b)
+  a | b (aka a + b)
+  a - b (aka a / b)
+
+Selections can be combined using `&` (for set intersection)
+and `|` for (set union).  The operators `*` and
+`+` are convenient synonyms for `&` and `|`.  However,
+python will not allow using the words `and` / `or` / `not`.
+For set exclusion, use `/` or `-` instead.
+Be careful of operator precedence (Python's precedence is used).::
 
   Id(i,j,k,...)
 
