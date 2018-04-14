@@ -26,7 +26,7 @@
 
 from poly_term import PolyTerm
 from bonds import bond, dbond
-from pairs import calc_delta
+from pairs import calc_delta, ex_gen
 from concat_term import FFconcat
 from numpy import *
 from ewsum import lat_pts
@@ -69,7 +69,7 @@ class LJPair(PolyTerm):
 
         en = sum(u, -1)
         de = zeros(x.shape)
-        for k,(i,j) in enumerate(self.edges):
+        for k,(i,j) in enumerate(ex_gen(self.edges, self.excl)):
             de[...,i,:] += du[k]*db[...,k,:] # df/du du/dr dr/dx
             de[...,j,:] -= du[k]*db[...,k,:]
         return en, de
@@ -86,7 +86,7 @@ class LJPair(PolyTerm):
             r, db = dbond(delta) # r, dr/dx
             spl, dspl = self.spline(r**-6, order) # D(r^-6), dD(r^-6)/du
             dspl *= -6*r[...,newaxis]**-7 # du/dr
-            for k,(i,j) in enumerate(self.edges): # dD/dx
+            for k,(i,j) in enumerate(ex_gen(self.edges, self.excl)): # dD/dx
                 Ad[...,i,:,:] -= db[...,k,:,newaxis] \
                                 * dspl[...,k,newaxis,:]
                 Ad[...,j,:,:] += db[...,k,:,newaxis] \

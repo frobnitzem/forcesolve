@@ -2,7 +2,7 @@
 # TODO: - add Ewald term
 
 #import imp
-from edge import modprod
+from edge import modprod, srt2
 from concat_term import FFconcat
 
 # Basic term types
@@ -231,7 +231,8 @@ def order(i, t):
     elif len(i) == 3 and t[0] > t[2]:
         i = i[2],i[1],i[0]
         t = t[2],t[1],t[0]
-    elif len(i) == 4 and t[1] > t[2]:
+    elif len(i) == 4 and ( t[1] > t[2] or \
+                           t[1] == t[2] and t[0] > t[3] ):
         i = i[3],i[2],i[1],i[0]
         t = t[3],t[2],t[1],t[0]
     return i, t
@@ -255,11 +256,6 @@ class Term:
                 sum(map(len, index.values())), self.name) )
         terms = [self.cl(self.name+"_"+n,l) for n,l in index.iteritems()]
         return FFconcat(terms)
-
-def srt2(i,j):
-    if i > j:
-        return j,i
-    return i,j
 
 class PairTerm:
     def __init__(self, name, cl, gen):

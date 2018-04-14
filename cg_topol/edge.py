@@ -4,7 +4,12 @@ def add_edge(edge, i, j):
         edge.add((i,j))
     else:
         edge.add((j,i))
-	
+
+def srt2(i,j):
+    if i > j:
+        return j,i
+    return i,j
+
 def add_all_redge(edge, pdb, res_table, oi, ai, oj, aj):
     mino = min(oi,oj)
     maxo = max(oi,oj)

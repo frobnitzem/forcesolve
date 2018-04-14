@@ -49,10 +49,10 @@ class PolyBond(PolyTerm):
         raise RuntimeError, "Error! >1 energy derivative not "\
                               "supported."
 
-# UB is the same as a bond
+# UB is the same as a bond, but requires a different naming scheme.
 class PolyUB(PolyBond):
     def __init__(self, name, angles):
-        PolyTerm.__init__(self, "pub_" + name, 2)
+        PolyTerm.__init__(self, name, 2)
         self.edges = set([(i, k) for i,j,k in angles])
 	self.ineqs = [array([0.,  0.0, 1.0]),
 		      array([0., -1.0, 0.0])]

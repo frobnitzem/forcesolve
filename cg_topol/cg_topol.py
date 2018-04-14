@@ -14,6 +14,7 @@ from pangles import PolyAngle
 from ljpairs import LJPair
 from pimprop import PolyImprop
 
+from edge import srt2
 from read_term import read_terms
 
 import os

@@ -26,7 +26,7 @@
 
 from bspline import Bspline
 from spline_term import SplineTerm
-from edge import modprod
+from edge import modprod, srt2
 from bonds import bond, dbond
 from concat_term import FFconcat
 from numpy import *
@@ -46,37 +46,39 @@ def ex_gen(edges, excl):
         else:
             for i in excl[0]:
                 for j in excl[1]:
-                    if (min(i,j),max(i,j)) in edges:
+                    if srt2(i,j) in edges:
                         continue
                     yield i,j
 
 def pbc_delta(x, edges, excl, L):
+    assert False, "This routine needs to be fixed (output of >1 delta-r per pair won't currently work)."
     delta = []
     xv = reshape(x, (-1,x.shape[-2],3))
     N = x.shape[-2]
     for i,j in ex_gen(edges, excl):
 	for p in x[:,j] - x[:,i]:
-	    for z in lat_pts(delta, self.R2, self.box_L):
+	    for z in lat_pts(p, self.R2, self.box_L):
 		delta.append(-z[1])
     return array(delta)
 
+# TODO:  This should be implemented to return a stream of chunks (generator).
+#        That way, it could eventually be coupled to a consumer
+#        without using wasting memory in the midterm.
+#      However, memory use would only be O(N) for pbc
+#      if a distance-test were done here.
 def calc_delta(x, edges, excl, L):
     if L is not None:
         return pbc_delta(x, edges, L)
     if excl is None:
-        return array([x[...,j,:]-x[...,i,:] for i,j in edges])
-    if excl[0][0] == excl[1][0]: # same list
-        N = len(excl[0])*(len(excl[0])-1)/2
+        N = len(edges)
+    elif excl[0][0] == excl[1][0]: # same list
+        N = len(excl[0])*(len(excl[0])-1)/2 - len(edges)
     else:
-        N = len(excl[0])*len(excl[1])
-    delta = zeros(x.shape[:-2] + (N - len(edges),3))
-    k = 0
-    for i,j in ex_gen(edges, excl):
-        if (i,j) in edges:
-            continue
-        delta[...,k,:] = x[...,j,:]-x[...,i,:]
-        k += 1
-    assert k == delta.shape[-2]
+        N = len(excl[0])*len(excl[1]) - len(edges)
+    delta = zeros((N,) + x.shape[:-2] + (3,))
+    for k,(i,j) in enumerate(ex_gen(edges, excl)):
+        delta[k] = x[...,j,:]-x[...,i,:]
+    assert N == k+1, "Incorrectly formed Exclusion term!"
     return delta
 
 # Adds the "pair" forcefield term into the list of atomic interactions.
@@ -109,7 +111,8 @@ class SplinePair(SplineTerm):
 
         en = sum(u, -1)
         F = zeros(x.shape)
-        for k,(i,j) in enumerate(plist):
+        for k,(i,j) in enumerate(ex_gen(self.edges, self.excl)):
+            delta[k] = x[...,j,:]-x[...,i,:]
             F[...,i,:] += du[k]*db[...,k,:]
             F[...,j,:] -= du[k]*db[...,k,:]
         return en,F
@@ -126,7 +129,7 @@ class SplinePair(SplineTerm):
             Ad = zeros(x.shape + (self.f.n,))
             b,db = dbond(delta)
             spl, dspl = self.spline(b, order)
-            for k,(i,j) in enumerate(plist):
+            for k,(i,j) in enumerate(ex_gen(self.edges, self.excl)):
                 Ad[...,i,:,:] -= db[...,k,:,newaxis] \
                                 * dspl[...,k,newaxis,:]
                 Ad[...,j,:,:] += db[...,k,:,newaxis] \
