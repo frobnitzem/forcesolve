@@ -259,7 +259,7 @@ class Term:
 
 class PairTerm:
     def __init__(self, name, cl, gen):
-        self.name = name # e.g. "pair_1,4"
+        self.name = name # e.g. "pair_4+"
         self.cl = cl # e.g. SplinePair
         self.gen = gen # e.g. Conn(1,2)
 
@@ -292,7 +292,11 @@ class PairTerm:
                                                     if z != k)]
                 if len(aa) > 0 and len(bb) > 0:
                     index["%s_%s"%(t,u)] = ex, aa, bb
-                    count += len(aa)*len(bb)
+                    if i == j:
+                        count += len(aa)*(len(aa)-1)/2
+                    else:
+                        count += len(aa)*len(bb)
+                    count -= len(ex)
         print( "%d/%d unique %s terms"%(
                 len(index), count, self.name) )
         terms = [ self.cl(self.name+"_"+n, l[0], excl=l[1:]) \

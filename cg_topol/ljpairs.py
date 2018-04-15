@@ -26,6 +26,7 @@
 
 from poly_term import PolyTerm
 from bonds import bond, dbond
+from edge import srt2
 from pairs import calc_delta, ex_gen
 from concat_term import FFconcat
 from numpy import *
@@ -48,8 +49,7 @@ class LJPair(PolyTerm):
 	self.ineqs = [array([0.,  0.0, 1.0]),
 		      array([0., -1.0, 0.0]),
 		      array([0.,  1.0, 1.0])]
-        self.edges = set( (min(e[0],e[1]), max(e[0],e[1])) for e in edges
-                            if e[0] != e[1] )
+        self.edges = set( srt2(*e) for e in edges if e[0] != e[1] )
         self.excl = excl
 	self.R2 = R2
         self.L = L
@@ -91,6 +91,7 @@ class LJPair(PolyTerm):
                                 * dspl[...,k,newaxis,:]
                 Ad[...,j,:,:] += db[...,k,:,newaxis] \
                                 * dspl[...,k,newaxis,:]
+            assert k+1 == len(delta)
             A = sum(spl, -2)
             return A, Ad
         else:

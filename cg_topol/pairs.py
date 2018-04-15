@@ -91,8 +91,7 @@ class SplinePair(SplineTerm):
     def __init__(self, name, edges, L=None, excl=None):
         # internal vars
         SplineTerm.__init__(self, name, Bspline(6), 100, 0.0, 11.0, 2)
-        self.edges = set( (min(e[0],e[1]), max(e[0],e[1])) for e in edges
-                            if e[0] != e[1] )
+        self.edges = set( srt2(*e) for e in edges if e[0] != e[1] )
         self.excl = excl
         self.L = L
 
