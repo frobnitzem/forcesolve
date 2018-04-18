@@ -76,6 +76,7 @@ def calc_delta(x, edges, excl, L):
     else:
         N = len(excl[0])*len(excl[1]) - len(edges)
     delta = zeros((N,) + x.shape[:-2] + (3,))
+    k = -1
     for k,(i,j) in enumerate(ex_gen(edges, excl)):
         delta[k] = x[...,j,:]-x[...,i,:]
     assert N == k+1, "Incorrectly formed Exclusion term!"

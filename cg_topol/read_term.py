@@ -290,6 +290,10 @@ class PairTerm:
                 bb = [k for k in ant[u] \
                         if not all(srt2(z,k) in ex for z in ant[t] \
                                                     if z != k)]
+                nex = set(aa + bb)
+                for i,j in ex:
+                    if i not in nex or j not in nex:
+                        ex.remove((i,j))
                 if len(aa) > 0 and len(bb) > 0:
                     index["%s_%s"%(t,u)] = ex, aa, bb
                     if i == j:
