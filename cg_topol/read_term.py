@@ -291,7 +291,7 @@ class PairTerm:
                         if not all(srt2(z,k) in ex for z in ant[t] \
                                                     if z != k)]
                 nex = set(aa + bb)
-                for i,j in ex:
+                for i,j in list(ex):
                     if i not in nex or j not in nex:
                         ex.remove((i,j))
                 if len(aa) > 0 and len(bb) > 0:
