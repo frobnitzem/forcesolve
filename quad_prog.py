@@ -8,6 +8,8 @@ from cvxopt import solvers, matrix #, spmatrix, mul
 #from scipy import sparse
 import numpy.linalg as la
 
+solvers.options['show_progress'] = False
+
 def mat(x):
     if x is None:
 	return None
