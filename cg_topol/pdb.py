@@ -20,6 +20,18 @@ class PDB:
         self.conn = build_conn(self.atoms, edge)
         self.L = None
 
+    def write(self, fname):
+        out = open(fname, "w")
+        fmt = "ATOM  %5d%s%8.3f%8.3f%8.3f\n"
+        for i in range(self.atoms):
+            name = " %-4s %3s %c%4d    " % \
+                        (self.names[i][0], self.names[i][1], ' ', 1)
+            x = self.x[i]
+            out.write(fmt % (i+1, name, x[0], x[1], x[2]))
+        for i,j in self.edge:
+            out.write("CONECT%5d%5d\n"%(i+1,j+1))
+        out.close()
+
 # Inputs:
 #   params -- parsed parameter file
 # Output:
