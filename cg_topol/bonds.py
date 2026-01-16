@@ -1,7 +1,7 @@
-from spline_term import SplineTerm
-from bspline import Bspline
-from concat_term import FFconcat
 from numpy import *
+from .spline_term import SplineTerm
+from .bspline import Bspline
+from .concat_term import FFconcat
 
 # Single bond term type shared by all edges in the list
 # e.g. C-C, or C-H
@@ -45,19 +45,19 @@ class SplineBond(SplineTerm):
                                 * dspl[...,k,newaxis,:]
             A = sum(spl, -2)
             return A, Ad
-        raise RuntimeError, "Error! >1 energy derivative not "\
-                              "supported."
+        raise NotImplementedError("Error! >1 energy derivative not "\
+                              "supported.")
 
 def bond(x):
 	if len(x.shape) > 2:
-		trns = range(len(x.shape))
+		trns = list(range(len(x.shape)))
 		trns = trns[1:-1]+trns[:1]+trns[-1:]
 		x = transpose(x, trns)
 	return sqrt(sum(x*x,-1))
 
 def dbond(x):
 	if len(x.shape) > 2:
-		trns = range(len(x.shape))
+		trns = list(range(len(x.shape)))
 		trns = trns[1:-1]+trns[:1]+trns[-1:]
 		x = transpose(x, trns)
 	# x=j-i => dr(j-i)/dj = x/r
@@ -89,7 +89,7 @@ def bond_terms(pdb, mkterm, edge=None):
             bond_index[name] = []
         bond_index[name].append((i,j))
 
-    print "%d Bonds"%sum(map(len, bond_index.values()))
+    print("%d Bonds"%sum(map(len, bond_index.values())))
     terms = [mkterm(n,l) for n,l in bond_index.iteritems()]
     return FFconcat(terms)
 

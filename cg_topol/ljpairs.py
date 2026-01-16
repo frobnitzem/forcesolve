@@ -24,13 +24,13 @@
 # University of Cincinnati
 # This work was supported by a DOE CSGF.
 
-from poly_term import PolyTerm
-from bonds import bond, dbond
-from edge import srt2
-from pairs import calc_delta, ex_gen
-from concat_term import FFconcat
 from numpy import *
-from ewsum import lat_pts
+from .poly_term import PolyTerm
+from .bonds import bond, dbond
+from .edge import srt2
+from .pairs import calc_delta, ex_gen
+from .concat_term import FFconcat
+from .ewsum import lat_pts
 
 # Adds the "pair" forcefield term into the list of atomic interactions.
 # The default (excl == None) is to treat 'edges' as pairs to *include*.
@@ -42,16 +42,16 @@ class LJPair(PolyTerm):
     def __init__(self, name, edges, L=None, R2=11.0**2, excl=None):
         # internal vars
         PolyTerm.__init__(self, name, 2)
-	#self.ineqs = [array([0.,  0.0, 1.0]), 0.0,
-	#	      array([0.,  0.0,-1.0]), 100.0,
-	#	      array([0., -1.0, 0.0]), 0.0,
-	#	      array([0.,  1.0, 0.0]), -100.0]
-	self.ineqs = [array([0.,  0.0, 1.0]),
-		      array([0., -1.0, 0.0]),
-		      array([0.,  1.0, 1.0])]
+        #self.ineqs = [array([0.,  0.0, 1.0]), 0.0,
+        #              array([0.,  0.0,-1.0]), 100.0,
+        #              array([0., -1.0, 0.0]), 0.0,
+        #              array([0.,  1.0, 0.0]), -100.0]
+        self.ineqs = [array([0.,  0.0, 1.0]),
+                      array([0., -1.0, 0.0]),
+                      array([0.,  1.0, 1.0])]
         self.edges = set( srt2(*e) for e in edges if e[0] != e[1] )
         self.excl = excl
-	self.R2 = R2
+        self.R2 = R2
         self.L = L
 
 # Returns the energy of configuration x and/or the conserved force on each atom.
@@ -59,7 +59,7 @@ class LJPair(PolyTerm):
         delta = calc_delta(x, self.edges, self.excl, self.L)
         b = bond(delta)**-6
         return sum(self.f.y(c, b), -1)
-	
+        
     def force(self, c, x):
         delta = calc_delta(x, self.edges, self.excl, self.L)
         r, db = dbond(delta) # r, dr/dx
@@ -95,6 +95,6 @@ class LJPair(PolyTerm):
             A = sum(spl, -2)
             return A, Ad
         else:
-            raise RuntimeError, "Error! >1 energy derivative not "\
-                                  "supported."
+            raise NotImplementedError("Error! >1 energy derivative not "\
+                                  "supported.")
 

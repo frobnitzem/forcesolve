@@ -39,9 +39,9 @@ class counter:
 			l *= self.n[-1]
 			#print "start = %f, step = %f, n = %d"%(self.start[i],\
 			#		self.step[i], self.n[i])
-		print "len = %d"%(l)
+		print("len = %d"%(l))
 		if(l > 1.0e+7):
-			raise ValueError, "Error! Bin array is more than 20 Mb!"
+			raise ValueError("Error! Bin array is more than 20 Mb!")
 		self.bin = zeros(self.n)
 	
 	# sums all bins not in marginal distribution list, 
@@ -56,9 +56,9 @@ class counter:
 			if(i not in bins):
 				sumit.append(i)
 		
-		print "Constructing marginal distribution of %d " \
+		print("Constructing marginal distribution of %d " \
 			"variables by summing over the other %d.\n"%( \
-				len(bins), len(sumit))
+				len(bins), len(sumit)))
 		
 		bin = self.bin
 		for i in range(len(sumit)):
@@ -68,12 +68,12 @@ class counter:
 		return bin
 		
 	def show_status(self):
-		print "%d data points taken, %d out of range.\n"%(self.N, \
-					self.out)
+		print("%d data points taken, %d out of range.\n"%(self.N, \
+					self.out))
 		
 	def append(self, x):
 		if(len(x) != self.dim):
-			raise RuntimeError, "Bad call to counter.collect()"
+			raise RuntimeError("Bad call to counter.collect()")
 		
 		# find correct bin
 		piece = self.bin
@@ -84,8 +84,8 @@ class counter:
 				#print "%f < x[%d] < %f"%(self.start[d], d, \
 				#	self.start[d]+self.n[d]*self.step[d])
 				if self.out%100 == 0:
-					print "Collected %d points out " \
-						"of range."%(self.out)
+					print("Collected %d points out " \
+						"of range."%(self.out))
 				self.out += 1
 				return
 			piece = piece[j]
@@ -124,16 +124,16 @@ class wt_counter:
 			l *= self.n[-1]
 			#print "start = %f, step = %f, n = %d"%(self.start[i],\
 			#		self.step[i], self.n[i])
-		print "len = %d"%(l)
+		print("len = %d"%(l))
 		if(l > 1.0e+7):
-			raise ValueError, "Error! Bin array is more than 40 Mb!"
+			raise ValueError("Error! Bin array is more than 40 Mb!")
 		self.bin = zeros(self.n, float)
 	
 	# sums all bins not in marginal distribution list, 
 	# whose numbering starts from 0
 	def marginaldist(self, bins):
 		if(len(bins) < 0):
-			raise RuntimeError, "No Bins selected!"
+			raise RuntimeError("No Bins selected!")
 		# useful?
 		bins.sort()
 		
@@ -143,9 +143,9 @@ class wt_counter:
 			if(i not in bins):
 				sumit.append(i)
 		
-		print "Constructing marginal distribution of %d " \
+		print("Constructing marginal distribution of %d " \
 			"variables by summing over the other %d.\n"%( \
-				len(bins), len(sumit))
+				len(bins), len(sumit)))
 		
 		bin = self.bin
 		for i in range(len(sumit)):
@@ -155,12 +155,12 @@ class wt_counter:
 		return bin
 		
 	def show_status(self):
-		print "%d data points taken, %d out of range.\n"%(self.N, \
-					self.out)
+		print("%d data points taken, %d out of range.\n"%(self.N, \
+					self.out))
 		
 	def append(self, x, wt=1.0):
 		if(len(x) != self.dim):
-			raise RuntimeError, "Bad call to counter.append()"
+			raise RuntimeError("Bad call to counter.append()")
 		
 		#print "Adding " + str(x) + " with wt = %e."%(wt)
 		# find correct bin
@@ -173,8 +173,8 @@ class wt_counter:
 				#	self.start[d]+self.n[d]*self.step[d])
 				self.out += 1
 				if self.out%100 == 0:
-					print "Collected %d points out " \
-						"of range."%(self.out)
+					print("Collected %d points out " \
+						"of range."%(self.out))
 				return
 			piece = piece[j]
 		

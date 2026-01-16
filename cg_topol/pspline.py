@@ -26,7 +26,7 @@
 from numpy import *
 import numpy.linalg as la
 import numpy.random as rand
-from ucgrad import write_matrix, write_list, stats
+from .ucgrad import write_matrix, write_list, stats
 
 # Looking back, the only confusing thing about this implementation
 # is that I call the paper's spline tension (lambda) as alpha in
@@ -181,7 +181,7 @@ class pspline_match:
 	
 	# Generate conditional samples.
 	def update_sample(self, n=0, logalpha=None):
-	    for i in xrange(n):
+	    for i in range(n):
 		#print "    Updating."
 		iC = self.calc_iC()
 		b = zeros((self.f.n,2))
@@ -220,14 +220,14 @@ class pspline_match:
 			raise ProgramError, "Error! no data has been collected!"
 		if skip > 0:
 			print "Doing sampling burn-in..."
-		for i in xrange(skip):
+		for i in range(skip):
 			self.update_sample(toss, None)
 		print "Collecting %d samples..."%samples
 		if self.logalpha != None:
 			out = open(self.logalpha, 'w')
 			out.truncate()
 			out.close()
-		for i in xrange(samples):
+		for i in range(samples):
 			self.update_sample(toss, self.logalpha)
 			theta, dmu2 = self.calc_theta_stats()
 			self.sum_theta.append(theta)

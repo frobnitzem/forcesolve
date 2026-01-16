@@ -20,25 +20,25 @@
 
 # David M. Rogers
 
-from edge import modprod
-from poly_term import PolyTerm
-from bspline import Bspline
-from concat_term import FFconcat
 from numpy import *
 import numpy.linalg as la
-from torsions import cross_product
+from .edge import modprod
+from .poly_term import PolyTerm
+from .bspline import Bspline
+from .concat_term import FFconcat
+from .torsions import cross_product
 
 # [cos(n phi)] = V . [(cos phi)^n]
 #V = array([[ 1.,  0.,  0.,  0.,  0.,  0.,  0.],
-#	   [ 0.,  1.,  0.,  0.,  0.,  0.,  0.],
-#	   [-1.,  0.,  2.,  0.,  0.,  0.,  0.],
-#	   [ 0., -3.,  0.,  4.,  0.,  0.,  0.],
-#	   [ 1.,  0., -8.,  0.,  8.,  0.,  0.],
+#           [ 0.,  1.,  0.,  0.,  0.,  0.,  0.],
+#           [-1.,  0.,  2.,  0.,  0.,  0.,  0.],
+#           [ 0., -3.,  0.,  4.,  0.,  0.,  0.],
+#           [ 1.,  0., -8.,  0.,  8.,  0.,  0.],
 #          [ 0.,  5.,  0.,-20.,  0., 16.,  0.],
 #          [-1.,  0., 18.,  0.,-48.,  0., 32.]])
 W = array([[ 1.,  0.,  0.,  0.,  0.,  0.,  0.],
-	   [ 0.,  1.,  0.,  0.,  0.,  0.,  0.],
-	   [ 2.,  0.,  1.,  0.,  0.,  0.,  0.],
+           [ 0.,  1.,  0.,  0.,  0.,  0.,  0.],
+           [ 2.,  0.,  1.,  0.,  0.,  0.,  0.],
            [ 0.,  3.,  0.,  1.,  0.,  0.,  0.],
            [ 6.,  0.,  4.,  0.,  1.,  0.,  0.],
            [ 0., 10.,  0.,  5.,  0.,  1.,  0.],
@@ -52,7 +52,7 @@ W /= (2**arange(len(W)))[:,newaxis]
 def gen_constrain_n(n,m):
     nparam = len(n)
     if nparam == 0:
-	return identity(m)
+        return identity(m)
     un = [i for i in range(m) if i not in n]
     return transpose(W)[un] # gets a bunch of rows
 
@@ -61,9 +61,9 @@ class PolyTorsion(PolyTerm):
     def __init__(self, name, tors, constrain_n=False):
         PolyTerm.__init__(self, name, 6)
         if constrain_n != False and constrain_n(name) is not None:
-	    self.constraints = gen_constrain_n(constrain_n(name),7)
+            self.constraints = gen_constrain_n(constrain_n(name),7)
         self.tors = tors
-	
+        
     def energy(self, c, x):
         A = torsionc(array([[x[...,i,:]-x[...,j,:],\
                              x[...,k,:]-x[...,j,:],\
@@ -115,12 +115,12 @@ class PolyTorsion(PolyTerm):
             A = sum(spl, -2)
             return A, Ad
         else:
-            raise RuntimeError, "Error! >1 energy derivative not "\
-                                  "supported."
+            raise NotImplementedError("Error! >1 energy derivative not "\
+                                  "supported.")
 
 # cosine of torsion
 def torsionc(x):
-    trsp = range(len(x.shape))
+    trsp = list(range(len(x.shape)))
     # Operate on last 2 dim.s (atom and xyz) + (..., number)
     trsp = trsp[1:2] + trsp[-1:] + trsp[2:-1] + trsp[:1]
     x = transpose(x, trsp)
@@ -131,7 +131,7 @@ def torsionc(x):
 
 # derivative of cosine of torsion
 def dtorsionc(x):
-    trsp = range(len(x.shape)) # (tor serial, tor atom, ..., xyz)
+    trsp = list(range(len(x.shape))) # (tor serial, tor atom, ..., xyz)
     trsp = trsp[1:2] + trsp[-1:] + trsp[2:-1] + trsp[:1]
     x = transpose(x, trsp) # (tor atom, xyz, ..., tor serial)
 
@@ -151,6 +151,6 @@ def dtorsionc(x):
     d[1] = -cross_product(x[0], A1 - cphi*A0)/x0 \
            -cross_product(x[2], A0 - cphi*A1)/x1
 
-    trsp = range(2, len(x.shape)) + [0,1] # Move (atom,xyz) to last 2 dim.s
+    trsp = list(range(2, len(x.shape))) + [0,1] # Move (atom,xyz) to last 2 dim.s
     return cphi, transpose(d, trsp)
 

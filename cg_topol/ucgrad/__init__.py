@@ -24,13 +24,13 @@
 
 __version__ = 0.3
 
-from array_io import *
-from counter import *
-from mc import *
-from prot_files import *
-from vector import *
-from methods import *
-from cspline import *
-from impose import *
-from parser import *
-from units import *
+from .array_io import *
+from .counter import *
+from .mc import *
+from .prot_files import *
+from .vector import *
+from .methods import *
+from .cspline import *
+from .impose import *
+from .parser import *
+from .units import *

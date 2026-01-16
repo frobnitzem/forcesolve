@@ -71,14 +71,14 @@ def get_th_phi(x, y, n):
 
 def get_ic(x, connect=[]):
 	if(len(x.shape) != 2 or x.shape[1] != 3):
-	    raise ValueError, "Coordinates have wrong shape: " + str(x.shape)
+	    raise ValueError("Coordinates have wrong shape: " + str(x.shape))
 	
 	if(connect == []): # linear chain (default behavior)
-		connect = range(-1, x.shape[0]-1)
+		connect = list(range(-1, x.shape[0]-1))
 	
 	if(len(connect) != x.shape[0]):
-		raise ValueError, "Connection list has wrong length: %d out of"\
-				" %d atoms"%(len(connect), x.shape[0])
+		raise ValueError("Connection list has wrong length: %d out of"\
+				" %d atoms"%(len(connect), x.shape[0]))
 	
 	# Coordinates + 3 universal orientation points
 	y = resize(x, (x.shape[0]+3, 3))
@@ -134,8 +134,8 @@ def orientate(x, b0, b1):
 	y[0] = 0. # Subtract projection onto x-axis
 	ym = sum(y*y)
 	if(ym < 1.0e-20):
-		print "Warning! Second vector is colinear with first!"
-		print "Unable to satisfy second orientation criterion uniquely."
+		print("Warning! Second vector is colinear with first!")
+		print("Unable to satisfy second orientation criterion uniquely.")
 	else:
 		R = dot(build_rot_to(y,array([0.,0.,1.])), R)
 	return dot(x, transpose(R))

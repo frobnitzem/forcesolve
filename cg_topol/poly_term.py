@@ -28,7 +28,7 @@ class PolyTerm:
         #                = x^{a-n} prod_{j=a+1-n}^a j
         for i in range(nd):
             Mp[..., :, i+1:] *= (arange(self.params)-i)[:,newaxis]
-        return transpose(Mp, [len(Mp.shape)-1,] + range(len(Mp.shape)-1))
+        return transpose(Mp, [len(Mp.shape)-1,] + list(range(len(Mp.shape)-1)))
 
     def write(self, pre, c, mode='w'):
         #name = self.name.replace(' ', '-').replace('\t', '_'\
@@ -42,29 +42,29 @@ class PolyTerm:
         out.close()
 
 def read_poly_term(file):
-	digits = "01234567890.-+"
-	
-	lines = open(file).readlines()
-	info = lines[0][1:].split()
-	#print info
-	if info[0] != "POLY" or len(info) != 4:
-		raise InputError, "Error! Input file is not POLY type."
+        digits = "01234567890.-+"
+        
+        lines = open(file).readlines()
+        info = lines[0][1:].split()
+        #print info
+        if info[0] != "POLY" or len(info) != 4:
+                raise TypeError("Error! Input file is not POLY type.")
 
-	id = info[1].split("_")
-	
-	n = int(info[3])
-	c = zeros(n+1)
-	i = 0
-	for line in lines[1:]:
-		tok = line.split()
-		if len(tok) > 1:
-		   if(tok[0][0] in digits and tok[1][0] in digits):
-		      if i > n:
-			print "Warning! Extra data in POLY file "\
-				"ignored!!"
-			break
-		      c[i] = float(tok[1])
-		      i += 1
-	if i != n+1:
-		print "Warning! Not all spline coefficients read from %s!"%file
-	return id, c
+        id = info[1].split("_")
+        
+        n = int(info[3])
+        c = zeros(n+1)
+        i = 0
+        for line in lines[1:]:
+                tok = line.split()
+                if len(tok) > 1:
+                   if(tok[0][0] in digits and tok[1][0] in digits):
+                      if i > n:
+                        print("Warning! Extra data in POLY file "\
+                                "ignored!!")
+                        break
+                      c[i] = float(tok[1])
+                      i += 1
+        if i != n+1:
+                print("Warning! Not all spline coefficients read from %s!"%file)
+        return id, c

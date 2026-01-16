@@ -26,10 +26,10 @@ def add_all_redge(edge, pdb, res_table, oi, ai, oj, aj):
         try:
             iat = [a.split()[0] for a in ir.names].index(ai)
         except ValueError:
-            print "Warning! From atom %s not present in "\
+            print("Warning! From atom %s not present in "\
                "residue %s %d offset %d from %s"%(ai, \
                 ir.name, res_table[i]+oi+1, oi, \
-                pdb.res[res_table[i]].name)
+                pdb.res[res_table[i]].name))
             del res_table[i]
             continue
         try:
@@ -42,13 +42,13 @@ def add_all_redge(edge, pdb, res_table, oi, ai, oj, aj):
 def append_edge(edge, pdb, line):
     i = int(line[0])-1
     if i < 0 or i > pdb.atoms:
-        raise InputError, "Error EDGE line contains out-of"\
-                "-range from atom number %d.\n"%(i+1)
+        raise IndexError("Error EDGE line contains out-of"\
+                "-range from atom number %d.\n"%(i+1))
     for to in line[1:]:
         j = int(to)
         if j < 0 or j > pdb.atoms:
-            raise InputError, "Error EDGE line contains out-of"\
-                "-range to atom number %d->%d.\n"%(i+1, j+1)
+            raise IndexError("Error EDGE line contains out-of"\
+                "-range to atom number %d->%d.\n"%(i+1, j+1))
         add_edge(edge, i, j)
 
 def append_redge(edge, pdb, line):
@@ -100,10 +100,10 @@ extend = lambda pdb, x: x | mconcat(pdb.conn[b] for b in x)
 def orderset(a, x):
     s = set()
     for b in x:
-	if a > b:
-	    s.add((b,a))
-	else:
-	    s.add((a,b))
+        if a > b:
+            s.add((b,a))
+        else:
+            s.add((a,b))
     return s
 
 # n = 4 => include 1,4 pairs, but exclude 1,2 and 1,3

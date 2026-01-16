@@ -1,6 +1,6 @@
 from numpy import reshape
 import numpy.random as rand
-from bspline import spline_func
+from .bspline import spline_func
 
 # Default parameter count, constraints, prior, and pri_sample for 
 class SplineTerm:

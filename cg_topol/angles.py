@@ -22,11 +22,11 @@
 # University of Cincinnati
 # This work was supported by a DOE CSGF.
 
-from spline_term import SplineTerm
-from bspline import Bspline
-from edge import modprod
-from concat_term import FFconcat
 from numpy import *
+from .spline_term import SplineTerm
+from .bspline import Bspline
+from .edge import modprod
+from .concat_term import FFconcat
 
 # Adds the "angle" forcefield term into the list of atomic interactions.
 class SplineAngle(SplineTerm):
@@ -79,12 +79,12 @@ class SplineAngle(SplineTerm):
             A = sum(spl,-2)
             return A, Ad
         else:
-            raise RuntimeError, "Error! >1 energy derivative not "\
-                                "supported."
+            raise NotImplementedError("Error! >1 energy derivative not "\
+                                "supported.")
 
 def anglec(x):
 	if len(x.shape) > 3:
-		trns = range(len(x.shape))
+		trns = list(range(len(x.shape)))
 		trns = trns[2:-1]+trns[:2]+trns[-1:]
 		x = transpose(x, trns)
 	return sum(x[...,0,:]*x[...,1,:],-1) \
@@ -92,7 +92,7 @@ def anglec(x):
 	
 def danglec(x):
 	if len(x.shape) > 3:
-		trns = range(len(x.shape))
+		trns = list(range(len(x.shape)))
 		trns = trns[2:-1]+trns[:2]+trns[-1:]
 		x = transpose(x, trns)
 	rijk_inv = 1.0/sqrt(sum(x*x,-1)) # x.shape by 2
@@ -125,7 +125,7 @@ def angle_terms(pdb, mkterm, angles=None):
             angle_index[name] = []
         angle_index[name].append((i,j,k))
 
-    print "%d Angles"%sum(map(len, angle_index.values()))
+    print("%d Angles"%sum(map(len, angle_index.values())))
     terms = [mkterm(n,l) for n,l in angle_index.iteritems()]
     return FFconcat(terms)
 

@@ -153,7 +153,7 @@ def test():
 # q_atoms = dot(MQ, q), MQ.shape = (N, Nchg)
 def ES_seed(x, mask, MQ, L, cfac = 332.0716):
     if L == None: # non-periodic
-	return inf_ES_seed(x, mask, MQ, cfac)
+        return inf_ES_seed(x, mask, MQ, cfac)
     iL = la.inv(L)
     Eta, M2 = Eta_M2(prod(diag(L)))
 
@@ -166,10 +166,10 @@ def ES_seed(x, mask, MQ, L, cfac = 332.0716):
         except KeyError:
             c = 1.0
         e, fq = esum(x[:,i,:]-x[:,j,:], c, L, iL, Eta, M2)
-	S = MQ[i,:,newaxis]*MQ[j,newaxis,:] \
-	  + MQ[j,:,newaxis]*MQ[i,newaxis,:]
-	fs[:,i] += fq[...,newaxis,newaxis]*S
-	fs[:,j] -= fq[...,newaxis,newaxis]*S
+        S = MQ[i,:,newaxis]*MQ[j,newaxis,:] \
+          + MQ[j,:,newaxis]*MQ[i,newaxis,:]
+        fs[:,i] += fq[...,newaxis,newaxis]*S
+        fs[:,j] -= fq[...,newaxis,newaxis]*S
 
     return fs*cfac
 
@@ -186,13 +186,13 @@ def inf_ES_seed(x, mask, MQ, cfac = 332.0716):
                 continue
         except KeyError:
             c = 1.0
-	r = x[:,i] - x[:,j]
-	r *= (sum(r*r, -1)**-1.5)[...,newaxis]
-	S = MQ[i,:,newaxis]*MQ[j,newaxis,:] \
-	  + MQ[j,:,newaxis]*MQ[i,newaxis,:]
+        r = x[:,i] - x[:,j]
+        r *= (sum(r*r, -1)**-1.5)[...,newaxis]
+        S = MQ[i,:,newaxis]*MQ[j,newaxis,:] \
+          + MQ[j,:,newaxis]*MQ[i,newaxis,:]
         S *= c
-	fs[:,i] += r[...,newaxis,newaxis]*S
-	fs[:,j] -= r[...,newaxis,newaxis]*S
+        fs[:,i] += r[...,newaxis,newaxis]*S
+        fs[:,j] -= r[...,newaxis,newaxis]*S
 
     return fs*cfac
 

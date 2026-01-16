@@ -23,18 +23,18 @@
 # University of Cincinnati
 # This work was supported by a DOE CSGF.
 
-from edge import modprod
-from spline_term import SplineTerm
-from bspline import Bspline
-from concat_term import FFconcat
-from numpy import *
+from numpy import array, zeros, transpose, arctan2
+from .edge import modprod
+from .spline_term import SplineTerm
+from .bspline import Bspline
+from .concat_term import FFconcat
 
 # Adds the "tor" forcefield term into the list of atomic interactions.
 class SplineTorsion(SplineTerm):
     def __init__(self, name, tors):
         SplineTerm.__init__(self, name, Bspline(4), 180, None, 2*pi, 0)
         self.tors = tors
-	
+        
     def energy(self, c, x):
         self.f.c = c
         A = torsion(array([[x[...,i,:]-x[...,j,:],\
@@ -89,57 +89,57 @@ class SplineTorsion(SplineTerm):
             A = sum(spl, -2)
             return A, Ad
         else:
-            raise RuntimeError, "Error! >1 energy derivative not "\
-                                  "supported."
+            raise NotImplementedError("Error! >1 energy derivative not "\
+                                  "supported.")
 
 def torsion(x):
-	trsp = range(len(x.shape))
-	# Operate on last 2 dim.s (atom and xyz) + (..., number)
-	trsp = trsp[1:2] + trsp[-1:] + trsp[2:-1] + trsp[:1]
-	x = transpose(x, trsp)
-	
-	x[1] = -x[1]/sqrt(sum(x[1]*x[1],0))
-	x[0] = x[0] - x[1]*sum(x[0]*x[1],0)
-	x[2] = x[2] - x[1]*sum(x[2]*x[1],0)
-	proj = sum(x[2]*cross_product(x[1],x[0]),0)
-	return arctan2(proj,sum(x[0]*x[2],0))
-	
+        trsp = range(len(x.shape))
+        # Operate on last 2 dim.s (atom and xyz) + (..., number)
+        trsp = trsp[1:2] + trsp[-1:] + trsp[2:-1] + trsp[:1]
+        x = transpose(x, trsp)
+        
+        x[1] = -x[1]/sqrt(sum(x[1]*x[1],0))
+        x[0] = x[0] - x[1]*sum(x[0]*x[1],0)
+        x[2] = x[2] - x[1]*sum(x[2]*x[1],0)
+        proj = sum(x[2]*cross_product(x[1],x[0]),0)
+        return arctan2(proj,sum(x[0]*x[2],0))
+        
 def dtorsion(x):
-	trsp = range(len(x.shape)) # (tor serial, tor atom, ..., xyz)
-	trsp = trsp[1:2] + trsp[-1:] + trsp[2:-1] + trsp[:1]
-	x = transpose(x, trsp) # (tor atom, xyz, ..., tor serial)
-	
-	A = zeros((4,3) + x.shape[2:])
-	
-	A[1:4] = x
-	x1 = sqrt(sum(x[1]*x[1],0))
-	x2 = sum(x[0]*x[1],0)
-	x3 = sum(x[2]*x[1],0)
-	A[0] = cross_product(A[1],A[2])
-	A[1] = cross_product(A[3],A[2])
-	v = sum(A[0]*A[0],0)
-	w = sum(A[1]*A[1],0)
-	A[2] = A[1]*(x3/(w*x1))[newaxis,...]
-	
-	t = x2/(v*x1)
-	x2 = sum(A[0]*A[1],0)
-	x3 = sum(A[0]*A[3],0)*x1
-	A[3] = A[0]*t[newaxis,...]
-	A[2] -= A[3]
-	A[0] *= (-x1/v)[newaxis,...]
-	A[1] *= (x1/w)[newaxis,...]
-	#t = sqrt(v*w)
-	#x2 /= t # cos(phi)
-	#x3 /= t # sin(phi)
-	phi = -arctan2(x3,x2)
-	A[3] = A[2]-A[1]
-	A[2] += A[0]
-	
-	trsp = range(2, len(x.shape)) + [0,1] # Move (atom,xyz) to last 2 dim.s
-	return phi, transpose(A, trsp)
-	
+        trsp = range(len(x.shape)) # (tor serial, tor atom, ..., xyz)
+        trsp = trsp[1:2] + trsp[-1:] + trsp[2:-1] + trsp[:1]
+        x = transpose(x, trsp) # (tor atom, xyz, ..., tor serial)
+        
+        A = zeros((4,3) + x.shape[2:])
+        
+        A[1:4] = x
+        x1 = sqrt(sum(x[1]*x[1],0))
+        x2 = sum(x[0]*x[1],0)
+        x3 = sum(x[2]*x[1],0)
+        A[0] = cross_product(A[1],A[2])
+        A[1] = cross_product(A[3],A[2])
+        v = sum(A[0]*A[0],0)
+        w = sum(A[1]*A[1],0)
+        A[2] = A[1]*(x3/(w*x1))[newaxis,...]
+        
+        t = x2/(v*x1)
+        x2 = sum(A[0]*A[1],0)
+        x3 = sum(A[0]*A[3],0)*x1
+        A[3] = A[0]*t[newaxis,...]
+        A[2] -= A[3]
+        A[0] *= (-x1/v)[newaxis,...]
+        A[1] *= (x1/w)[newaxis,...]
+        #t = sqrt(v*w)
+        #x2 /= t # cos(phi)
+        #x3 /= t # sin(phi)
+        phi = -arctan2(x3,x2)
+        A[3] = A[2]-A[1]
+        A[2] += A[0]
+        
+        trsp = range(2, len(x.shape)) + [0,1] # Move (atom,xyz) to last 2 dim.s
+        return phi, transpose(A, trsp)
+        
 def cross_product(x,y):
-	return array( [ x[1]*y[2] - x[2]*y[1], \
+        return array( [ x[1]*y[2] - x[2]*y[1], \
                         x[2]*y[0] - x[0]*y[2], \
                         x[0]*y[1] - x[1]*y[0] ] )
 
@@ -168,7 +168,6 @@ def torsion_terms(pdb, mkterm, tors=None):
 
     pdb.tors = tors
 
-    print "%d Torsions"%sum(map(len, tor_index.values()))
+    print("%d Torsions"%sum(map(len, tor_index.values())))
     terms = [mkterm(n,l) for n,l in tor_index.iteritems()]
     return FFconcat(terms)
-

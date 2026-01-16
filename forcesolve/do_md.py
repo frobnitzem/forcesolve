@@ -29,9 +29,9 @@
 
 import sys
 from cg_topol import *
-from md import *
 from cg_topol.ucgrad.array_io import *
 from cg_topol.ucgrad.parser import *
+from .md import *
 
 UsageInfo =  "Usage: do_md.py [options] [files]\n" \
 "Files:\n" \
@@ -52,7 +52,7 @@ AcceptedFlags = ['x', 'T', 'v', 'sx', 'sv', 'dt', 'ns', 'nt']+RequiredFlags
 
 def main(argv):
 	if(len(argv) < 5):
-		print UsageInfo
+		print(UsageInfo)
 		return 1
 	kT = 1.380603e-23/4.3597482e-18*300 # Hartree
 	
@@ -77,7 +77,7 @@ def main(argv):
 		dt = 1.0
 	if flags.has_key('T'):
 		temp = float(flags['T'][0])
-		print "Setting thermostat temperature to %f K"%(temp)
+		print("Setting thermostat temperature to %f K"%(temp))
 		kT = 1.380603e-23/4.3597482e-18*temp # Hartree
 	
 	# read parameter file
@@ -95,5 +95,5 @@ def main(argv):
 	md = md_integrate(x0, v0, topol, dt, kT)
 	md.do_md(ns, nt, flags['o'][0])
 
-if __name__ == "__main__":
+def run():
 	main(sys.argv)

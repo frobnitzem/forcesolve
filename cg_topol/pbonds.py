@@ -1,8 +1,8 @@
-from poly_term import PolyTerm
-from bspline import Bspline
-from concat_term import FFconcat
 from numpy import *
-from bonds import bond, dbond
+from .poly_term import PolyTerm
+from .bspline import Bspline
+from .concat_term import FFconcat
+from .bonds import bond, dbond
 
 # Single bond term type shared by all edges in the list
 # e.g. C-C, or C-H
@@ -10,8 +10,8 @@ class PolyBond(PolyTerm):
     def __init__(self, name, edges):
         # internal vars
         PolyTerm.__init__(self, name, 2)
-	self.ineqs = [array([0.,  0.0, 1.0]),
-		      array([0., -1.0, 0.0])]
+        self.ineqs = [array([0.,  0.0, 1.0]),
+                      array([0., -1.0, 0.0])]
         self.edges = edges
 
     def energy(self, c, x):
@@ -46,14 +46,14 @@ class PolyBond(PolyTerm):
                                 * dspl[...,k,newaxis,:]
             A = sum(spl, -2)
             return A, Ad
-        raise RuntimeError, "Error! >1 energy derivative not "\
-                              "supported."
+        raise NotImplementedError("Error! >1 energy derivative not "\
+                              "supported.")
 
 # UB is the same as a bond, but requires a different naming scheme.
 class PolyUB(PolyBond):
     def __init__(self, name, angles):
         PolyTerm.__init__(self, name, 2)
         self.edges = set([(i, k) for i,j,k in angles])
-	self.ineqs = [array([0.,  0.0, 1.0]),
-		      array([0., -1.0, 0.0])]
+        self.ineqs = [array([0.,  0.0, 1.0]),
+                      array([0., -1.0, 0.0])]
 

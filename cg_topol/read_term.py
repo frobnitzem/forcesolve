@@ -2,21 +2,21 @@
 # TODO: - add Ewald term
 
 #import imp
-from edge import modprod, srt2
-from concat_term import FFconcat
+from .edge import modprod, srt2
+from .concat_term import FFconcat
 
 # Basic term types
-from bonds import SplineBond
-from torsions import SplineTorsion
-from angles import SplineAngle
-from pairs import SplinePair
+from .bonds import SplineBond
+from .torsions import SplineTorsion
+from .angles import SplineAngle
+from .pairs import SplinePair
 
-from pbonds import PolyBond, PolyUB
-from ptorsions import PolyTorsion
-from pangles import PolyAngle
-from ljpairs import LJPair
+from .pbonds import PolyBond, PolyUB
+from .ptorsions import PolyTorsion
+from .pangles import PolyAngle
+from .ljpairs import LJPair
 
-from pimprop import improper_terms, PolyImprop
+from .pimprop import improper_terms, PolyImprop
 
 # (gen or filter) and (gen or filter)
 # = (gen and gen) or (gen and filter) or (filter and gen) or (filter and filter)
@@ -119,8 +119,8 @@ class Selection:
     def __sub__(a,b):
         return mkAnd(a, mkNot(b))
     def run(self, pdb):
-        if self.test != None:
-            raise RuntimeError, "Improper selection."
+        if self.test is not None:
+            raise NotImplementedError("Test selections do not run.")
         # Run generator on the pdb.
         for i in self.gen(pdb):
             yield i
@@ -142,7 +142,7 @@ def Id(*ij):
     if ij.count(None) > 0: # 'Id' contains a wildcard
         return Selection(None, lambda pdb: test)
     def gen(pdb): # generate a literal, singlet list
-        yield lookup(map(pred, ij), pdb)
+        yield lookup(list(map(pred, ij)), pdb)
     return Selection(gen, None)
 
 def Type(*tij):
@@ -317,7 +317,7 @@ def read_terms(pdb, name):
 
     exec(open(name).read())
     if not locals().has_key('terms'):
-        raise KeyError, "Term File: %s does not define 'terms'"%(name)
+        raise KeyError("Term File: %s does not define 'terms'"%(name))
 
     return FFconcat( [t.build(pdb) for t in terms] )
 
@@ -355,8 +355,8 @@ def read_terms(pdb, name):
 #   |X|
 #   4-1
 
-if __name__=="__main__":
-    from pdb import PDB
+def test():
+    from .pdb import PDB
     pdb = PDB([ ("1",1,'H3'),
                 ("2",1,'H3'),
                 ("3",1,'H3'),

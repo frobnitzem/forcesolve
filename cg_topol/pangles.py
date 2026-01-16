@@ -22,19 +22,19 @@
 # University of Cincinnati
 # This work was supported by a DOE CSGF.
 
-from poly_term import PolyTerm
-from bspline import Bspline
-from edge import modprod
-from concat_term import FFconcat
 from numpy import *
+from .poly_term import PolyTerm
+from .bspline import Bspline
+from .edge import modprod
+from .concat_term import FFconcat
 
 # Adds the "angle" forcefield term into the list of atomic interactions.
 class PolyAngle(PolyTerm):
     def __init__(self, name, angs):
         PolyTerm.__init__(self, name, 2)
         self.angs = angs
-	self.ineqs = [array([0.,  0.0, 1.0]),
-		      array([0., -1.0, 0.0])]
+        self.ineqs = [array([0.,  0.0, 1.0]),
+                      array([0., -1.0, 0.0])]
 
     def energy(self, c, x):
         A = angle(array([[x[...,i,:]-x[...,j,:],\
@@ -80,11 +80,11 @@ class PolyAngle(PolyTerm):
             A = sum(spl,-2)
             return A, Ad
         else:
-            raise RuntimeError, "Error! >1 energy derivative not "\
-                                "supported."
+            raise NotImplementedError("Error! >1 energy derivative not "\
+                                "supported.")
 def angle(x):
     if len(x.shape) > 3:
-            trns = range(len(x.shape))
+            trns = list(range(len(x.shape)))
             trns = trns[2:-1]+trns[:2]+trns[-1:]
             x = transpose(x, trns)
     cth = sum(x[...,0,:]*x[...,1,:],-1) \
@@ -93,7 +93,7 @@ def angle(x):
 
 def dangle(x):
     if len(x.shape) > 3:
-        trns = range(len(x.shape))
+        trns = list(range(len(x.shape)))
         trns = trns[2:-1]+trns[:2]+trns[-1:]
         x = transpose(x, trns)
     rijk_inv = 1.0/sqrt(sum(x*x,-1)) # x.shape by 2

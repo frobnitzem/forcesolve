@@ -1,5 +1,5 @@
-from ucgrad import read_pdb, array
-from edge import *
+from .ucgrad import read_pdb, array
+from .edge import *
 
 #   PDB : {
 #     conn : [Set Int], -- complete connection table,
@@ -77,14 +77,14 @@ def build_tindex(params):
     if params.has_key("TMASS"):
         for line in params["TMASS"]:
             tmass[line[0]] = 1836.1527*float(line[1])
-    print tmass
+    print(tmass)
     return tindex, tmass
 
 def add_rat(tindex, ra, t):
     if tindex.has_key(ra):
         if tindex[ra] != t:
-            raise InputError, "Error! ra pair " + str(ra) + " was " +\
-              str(self.tindex[ra])+", but is redefined as type "+t+"."
+            raise ValueError("Error! ra pair " + str(ra) + " was " +\
+              str(self.tindex[ra])+", but is redefined as type "+t+".")
     else:
         tindex[ra] = t
 
@@ -104,7 +104,7 @@ def build_name_index(pdb, tindex):
 			t = tindex[rname]
 		except KeyError:
 			t = "%s:%s"%(rname[0],rname[1])
-			print "Warning! Auto-typing %s."%t
+			print("Warning! Auto-typing %s."%t)
 			tindex[rname] = t
 		names.append((rname[0],rname[1],t))
 	return names
@@ -118,4 +118,3 @@ def build_conn(atoms, edge):
         conn[i].add(j)
         conn[j].add(i)
     return conn
-

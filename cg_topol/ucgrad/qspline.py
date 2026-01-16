@@ -25,7 +25,7 @@
 # University of Cincinnati, February, 2007
 
 from numpy import *
-from array_io import *
+from .array_io import *
 
 # FIXME: Currently assumes input list is sorted in ascending x-order
 #        and that all x-s are distinct.

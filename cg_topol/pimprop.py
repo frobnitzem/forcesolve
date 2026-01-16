@@ -20,14 +20,15 @@
 
 # David M. Rogers
 
-from edge import modprod
-from poly_term import PolyTerm
-from bspline import Bspline
-from concat_term import FFconcat
 from numpy import *
 import numpy.linalg as la
-from ptorsions import torsionc, dtorsionc
-from torsions import cross_product
+
+from .edge import modprod
+from .poly_term import PolyTerm
+from .bspline import Bspline
+from .concat_term import FFconcat
+from .ptorsions import torsionc, dtorsionc
+from .torsions import cross_product
 
 # Adds the "pimprop" forcefield term into the list of atomic interactions.
 class PolyImprop(PolyTerm):
@@ -38,11 +39,11 @@ class PolyImprop(PolyTerm):
         self.params = 1
         self.name = name
         self.constraints = []
-	self.ineqs = [array([1.0])]
+        self.ineqs = [array([1.0])]
         self.prior = []
         self.pri_rank = []
         self.ind = []
-	
+        
     def energy(self, c, x):
         A = atorsion(array([[x[...,i,:]-x[...,j,:],\
                              x[...,k,:]-x[...,j,:],\
@@ -94,21 +95,21 @@ class PolyImprop(PolyTerm):
             A = sum(spl, -2)
             return A, Ad
         else:
-            raise RuntimeError, "Error! >1 energy derivative not "\
-                                  "supported."
+            raise NotImplementedError("Error! >1 energy derivative not "\
+                                  "supported.")
 
     # Used to construct vectors which multiply parameters.
     # If x is a N-dim vector, the return value is an (nd+1)xNxP matrix
     def spline(self, x, nd=0):
-	if nd == None:
-	    return x[..., newaxis]**2
+        if nd == None:
+            return x[..., newaxis]**2
         Mp = x[newaxis,...]**(2 - arange(nd+1).reshape([nd+1]+[1]*len(x.shape)))
         # d^n/dx^n [x^a] = x^{a-n} prod_{i=0}^{n-1} a - i
         #                = x^{a-n} prod_{j=a+1-n}^a j
-	if nd >= 1:
-	    Mp[1:] *= 2.0
-	    if nd >= 3:
-		Mp[3:] = 0.0
+        if nd >= 1:
+            Mp[1:] *= 2.0
+            if nd >= 3:
+                Mp[3:] = 0.0
         return Mp[...,newaxis] # P = 1
 
     def write(self, pre, c, mode='w'):
@@ -141,15 +142,15 @@ def improper_terms(pdb, mkterm, tors=None):
         tk = pdb.names[k][2]
         tl = pdb.names[l][2]
         if tk > tl: # Bubble sort
-	    tk, tl = tl, tk
-	    k, l   = l, k
-	if tj > tk:
-	    tj, tk = tk, tj
-	    j, k   = k, j
-	    if tk > tl: # Bubble sort
-		tk, tl = tl, tk
-		k,   l = l, k
-	if tk == tl: # according to the CHARMM docs, we swap again!
+            tk, tl = tl, tk
+            k, l   = l, k
+        if tj > tk:
+            tj, tk = tk, tj
+            j, k   = k, j
+            if tk > tl: # Bubble sort
+                tk, tl = tl, tk
+                k,   l = l, k
+        if tk == tl: # according to the CHARMM docs, we swap again!
             tj, tk, tl = tk, tl, tj
             j, k, l    = k, l, j
         name = "%s_%s_%s_%s"%(ti,tj,tk,tl)
@@ -159,7 +160,7 @@ def improper_terms(pdb, mkterm, tors=None):
 
     #pdb.impr = imp_index
 
-    print "%d Impropers"%sum(map(len, imp_index.values()))
+    print("%d Impropers"%sum(map(len, imp_index.values())))
     terms = [mkterm(n,l) for n,l in imp_index.iteritems()]
     return FFconcat(terms)
 

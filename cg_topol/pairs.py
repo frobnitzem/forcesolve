@@ -24,12 +24,12 @@
 # University of Cincinnati
 # This work was supported by a DOE CSGF.
 
-from bspline import Bspline
-from spline_term import SplineTerm
-from edge import modprod, srt2
-from bonds import bond, dbond
-from concat_term import FFconcat
 from numpy import *
+from .bspline import Bspline
+from .spline_term import SplineTerm
+from .edge import modprod, srt2
+from .bonds import bond, dbond
+from .concat_term import FFconcat
 
 # Generate the actual pairs to consider.
 def ex_gen(edges, excl):
@@ -56,9 +56,9 @@ def pbc_delta(x, edges, excl, L):
     xv = reshape(x, (-1,x.shape[-2],3))
     N = x.shape[-2]
     for i,j in ex_gen(edges, excl):
-	for p in x[:,j] - x[:,i]:
-	    for z in lat_pts(p, self.R2, self.box_L):
-		delta.append(-z[1])
+        for p in x[:,j] - x[:,i]:
+            for z in lat_pts(p, self.R2, self.box_L):
+                delta.append(-z[1])
     return array(delta)
 
 # TODO:  This should be implemented to return a stream of chunks (generator).
@@ -102,7 +102,7 @@ class SplinePair(SplineTerm):
         delta = calc_delta(x, self.edges, self.excl, self.L)
         A = bond(delta)
         return sum(self.f.y(A), -1)
-	
+        
     def force(self, c, x):
         self.f.c = c
         delta = calc_delta(x, self.edges, self.excl, self.L)
@@ -137,6 +137,6 @@ class SplinePair(SplineTerm):
             A = sum(spl,-2)
             return A, Ad
         else:
-            raise RuntimeError, "Error! >1 energy derivative not "\
-                                  "supported."
+            raise NotImplementedError("Error! >1 energy derivative not "\
+                                  "supported.")
 
